@@ -1,0 +1,550 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "nom": "Menu"
+    },
+    {
+      "id": 2,
+      "nom": "Sandwiches"
+    },
+    {
+      "id": 3,
+      "nom": "Wraps"
+    },
+    {
+      "id": 4,
+      "nom": "Frites"
+    },
+    {
+      "id": 5,
+      "nom": "Boissons Froides"
+    },
+    {
+      "id": 6,
+      "nom": "Encas"
+    },
+    {
+      "id": 7,
+      "nom": "Desserts"
+    }
+  ],
+  "menu": [
+    {
+      "id": 101,
+      "categoryId": 1,
+      "nom": "280",
+      "prix": 4.50,
+      "description": "Burger double steak",
+      "image": "images/sandwiches/280.png"
+    },
+    {
+      "id": 102,
+      "categoryId": 1,
+      "nom": "Big Mac",
+      "prix": 5.50,
+      "description": "Double steak, sauce spéciale",
+      "image": "images/sandwiches/BIGMAC.png"
+    },
+    {
+      "id": 103,
+      "categoryId": 1,
+      "nom": "Big Tasty",
+      "prix": 6.50,
+      "description": "Steak épais, sauce fumée",
+      "image": "images/sandwiches/BIG_TASTY_1_VIANDE.png"
+    },
+    {
+      "id": 104,
+      "categoryId": 1,
+      "nom": "Big Tasty Bacon",
+      "prix": 6.90,
+      "description": "Big Tasty avec bacon croustillant",
+      "image": "images/sandwiches/BIG_TASTY_BACON_1_VIANDE.png"
+    },
+    {
+      "id": 105,
+      "categoryId": 1,
+      "nom": "CBO",
+      "prix": 5.80,
+      "description": "Poulet, bacon, oignons",
+      "image": "images/sandwiches/CBO.png"
+    },
+    {
+      "id": 106,
+      "categoryId": 1,
+      "nom": "McChicken",
+      "prix": 5.20,
+      "description": "Poulet pané, salade, mayo",
+      "image": "images/sandwiches/MCCHICKEN.png"
+    },
+    {
+      "id": 107,
+      "categoryId": 1,
+      "nom": "McCrispy",
+      "prix": 5.60,
+      "description": "Poulet croustillant épicé",
+      "image": "images/sandwiches/MCCRISPY.png"
+    },
+    {
+      "id": 108,
+      "categoryId": 1,
+      "nom": "McFish",
+      "prix": 5.40,
+      "description": "Poisson pané, sauce tartare",
+      "image": "images/sandwiches/MCFISH.png"
+    },
+    {
+      "id": 109,
+      "categoryId": 1,
+      "nom": "Royal Bacon",
+      "prix": 6.20,
+      "description": "Steak, bacon, fromage",
+      "image": "images/sandwiches/ROYALBACON.png"
+    },
+    {
+      "id": 110,
+      "categoryId": 1,
+      "nom": "Royal Cheese",
+      "prix": 5.80,
+      "description": "Steak, fromage, ketchup",
+      "image": "images/sandwiches/ROYALCHEESE.png"
+    },
+    {
+      "id": 111,
+      "categoryId": 1,
+      "nom": "Royal Deluxe",
+      "prix": 6.50,
+      "description": "Royal avec crudités fraîches",
+      "image": "images/sandwiches/ROYALDELUXE.png"
+    },
+    {
+      "id": 112,
+      "categoryId": 1,
+      "nom": "Signature BBQ Beef",
+      "prix": 7.20,
+      "description": "Bœuf braisé, sauce BBQ",
+      "image": "images/sandwiches/SIGNATURE_BBQ_BEEF_(2_VIANDES).png"
+    },
+    {
+      "id": 113,
+      "categoryId": 1,
+      "nom": "Signature BBQ Burger",
+      "prix": 6.80,
+      "description": "Burger sauce BBQ maison",
+      "image": "images/sandwiches/SIGNATURE_BEEF_BBQ_BURGER_(1_VIANDE).png"
+    }
+  ],
+  "sandwiches": [
+    {
+      "id": 201,
+      "categoryId": 2,
+      "nom": "280",
+      "prix": 4.50,
+      "description": "Burger double steak",
+      "image": "images/sandwiches/280.png"
+    },
+    {
+      "id": 202,
+      "categoryId": 2,
+      "nom": "Big Mac",
+      "prix": 5.50,
+      "description": "Double steak, sauce spéciale",
+      "image": "images/sandwiches/BIGMAC.png"
+    },
+    {
+      "id": 203,
+      "categoryId": 2,
+      "nom": "Big Tasty",
+      "prix": 6.50,
+      "description": "Steak épais, sauce fumée",
+      "image": "images/sandwiches/BIG_TASTY_1_VIANDE.png"
+    },
+    {
+      "id": 204,
+      "categoryId": 2,
+      "nom": "Big Tasty Bacon",
+      "prix": 6.90,
+      "description": "Big Tasty avec bacon croustillant",
+      "image": "images/sandwiches/BIG_TASTY_BACON_1_VIANDE.png"
+    },
+    {
+      "id": 205,
+      "categoryId": 2,
+      "nom": "CBO",
+      "prix": 5.80,
+      "description": "Poulet, bacon, oignons",
+      "image": "images/sandwiches/CBO.png"
+    },
+    {
+      "id": 206,
+      "categoryId": 2,
+      "nom": "McChicken",
+      "prix": 5.20,
+      "description": "Poulet pané, salade, mayo",
+      "image": "images/sandwiches/MCCHICKEN.png"
+    },
+    {
+      "id": 207,
+      "categoryId": 2,
+      "nom": "McCrispy",
+      "prix": 5.60,
+      "description": "Poulet croustillant épicé",
+      "image": "images/sandwiches/MCCRISPY.png"
+    },
+    {
+      "id": 208,
+      "categoryId": 2,
+      "nom": "McFish",
+      "prix": 5.40,
+      "description": "Poisson pané, sauce tartare",
+      "image": "images/sandwiches/MCFISH.png"
+    },
+    {
+      "id": 209,
+      "categoryId": 2,
+      "nom": "Royal Bacon",
+      "prix": 6.20,
+      "description": "Steak, bacon, fromage",
+      "image": "images/sandwiches/ROYALBACON.png"
+    },
+    {
+      "id": 210,
+      "categoryId": 2,
+      "nom": "Royal Cheese",
+      "prix": 5.80,
+      "description": "Steak, fromage, ketchup",
+      "image": "images/sandwiches/ROYALCHEESE.png"
+    },
+    {
+      "id": 211,
+      "categoryId": 2,
+      "nom": "Royal Deluxe",
+      "prix": 6.50,
+      "description": "Royal avec crudités fraîches",
+      "image": "images/sandwiches/ROYALDELUXE.png"
+    },
+    {
+      "id": 212,
+      "categoryId": 2,
+      "nom": "Signature BBQ Beef",
+      "prix": 7.20,
+      "description": "Bœuf braisé, sauce BBQ",
+      "image": "images/sandwiches/SIGNATURE_BBQ_BEEF_(2_VIANDES).png"
+    },
+    {
+      "id": 213,
+      "categoryId": 2,
+      "nom": "Signature BBQ Burger",
+      "prix": 6.80,
+      "description": "Burger sauce BBQ maison",
+      "image": "images/sandwiches/SIGNATURE_BEEF_BBQ_BURGER_(1_VIANDE).png"
+    }
+  ],
+  "wraps": [
+    {
+      "id": 301,
+      "categoryId": 3,
+      "nom": "McWrap Chèvre",
+      "prix": 5.90,
+      "description": "Galette, poulet, fromage de chèvre",
+      "image": "images/wraps/mcwrap-chevre.png"
+    },
+    {
+      "id": 302,
+      "categoryId": 3,
+      "nom": "McWrap Chèvre Bacon",
+      "prix": 6.40,
+      "description": "Wrap chèvre avec bacon fumé",
+      "image": "images/wraps/MCWRAP-POULET-BACON.png"
+    },
+    {
+      "id": 303,
+      "categoryId": 3,
+      "nom": "P'tit Wrap Chèvre",
+      "prix": 4.50,
+      "description": "Version snack du wrap chèvre",
+      "image": "images/wraps/PTIT_WRAP_CHEVRE.png"
+    },
+    {
+      "id": 304,
+      "categoryId": 3,
+      "nom": "P'tit Wrap Ranch",
+      "prix": 4.50,
+      "description": "Wrap poulet sauce ranch",
+      "image": "images/wraps/PTIT_WRAP_RANCH.png"
+    }
+  ],
+  "frites": [
+    {
+      "id": 401,
+      "categoryId": 4,
+      "nom": "Grande Frites",
+      "prix": 2.90,
+      "description": "Frites classiques en portion grande",
+      "image": "images/frites/GRANDE_FRITE.png"
+    },
+    {
+      "id": 402,
+      "categoryId": 4,
+      "nom": "Grande Potatoes",
+      "prix": 3.40,
+      "description": "Potatoes croustillantes grande portion",
+      "image": "images/frites/GRANDE_POTATOES.png"
+    },
+    {
+      "id": 403,
+      "categoryId": 4,
+      "nom": "Moyenne Frites",
+      "prix": 2.50,
+      "description": "Frites classiques en portion moyenne",
+      "image": "images/frites/MOYENNE_FRITE.png"
+    },
+    {
+      "id": 404,
+      "categoryId": 4,
+      "nom": "Petite Frites",
+      "prix": 2.00,
+      "description": "Frites classiques en portion petite",
+      "image": "images/frites/PETITE_FRITE.png"
+    },
+    {
+      "id": 405,
+      "categoryId": 4,
+      "nom": "Potatoes",
+      "prix": 3.10,
+      "description": "Potatoes croustillantes",
+      "image": "images/frites/POTATOES.png"
+    }
+  ],
+  "boissonsFroides": [
+    {
+      "id": 501,
+      "categoryId": 5,
+      "nom": "Coca-Cola",
+      "prix": 2.40,
+      "description": "Boisson gazeuse fraîche",
+      "image": "images/boissons/coca-cola.png"
+    },
+    {
+      "id": 502,
+      "categoryId": 5,
+      "nom": "Coca-Cola Sans Sucres",
+      "prix": 2.40,
+      "description": "Coca-Cola zéro sucres",
+      "image": "images/boissons/coca-sans-sucres.png"
+    },
+    {
+      "id": 503,
+      "categoryId": 5,
+      "nom": "Eau",
+      "prix": 2.00,
+      "description": "Bouteille d'eau minérale",
+      "image": "images/boissons/eau.png"
+    },
+    {
+      "id": 504,
+      "categoryId": 5,
+      "nom": "Fanta",
+      "prix": 2.40,
+      "description": "Soda à l'orange pétillant",
+      "image": "images/boissons/fanta.png"
+    },
+    {
+      "id": 505,
+      "categoryId": 5,
+      "nom": "Ice Tea Pêche",
+      "prix": 2.60,
+      "description": "Thé glacé saveur pêche",
+      "image": "images/boissons/ice-tea-peche.png"
+    },
+    {
+      "id": 506,
+      "categoryId": 5,
+      "nom": "Jus d'Orange",
+      "prix": 2.80,
+      "description": "Pur jus d'orange pressé",
+      "image": "images/boissons/jus-orange.png"
+    },
+    {
+      "id": 507,
+      "categoryId": 5,
+      "nom": "Jus de Pomme Bio",
+      "prix": 2.80,
+      "description": "Pur jus de pomme biologique",
+      "image": "images/boissons/jus-pomme-bio.png"
+    },
+    {
+      "id": 508,
+      "categoryId": 5,
+      "nom": "Thé Vert Citron Sans Sucres",
+      "prix": 2.60,
+      "description": "Thé vert infusé au citron",
+      "image": "images/boissons/the-vert-citron-sans-sucres.png"
+    }
+  ],
+  "encas": [
+    {
+      "id": 601,
+      "categoryId": 6,
+      "nom": "Cheeseburger",
+      "prix": 2.50,
+      "description": "Burger classique fromage",
+      "image": "images/encas/cheeseburger.png"
+    },
+    {
+      "id": 602,
+      "categoryId": 6,
+      "nom": "Croc-Mc",
+      "prix": 2.80,
+      "description": "Croque-monsieur grillé",
+      "image": "images/encas/croc-mc-do.png"
+    },
+    {
+      "id": 603,
+      "categoryId": 6,
+      "nom": "Nuggets x4",
+      "prix": 3.50,
+      "description": "4 morceaux de poulet panés",
+      "image": "images/encas/nuggets_4.png"
+    },
+    {
+      "id": 604,
+      "categoryId": 6,
+      "nom": "Nuggets x20",
+      "prix": 8.90,
+      "description": "20 morceaux de poulet panés",
+      "image": "images/encas/nuggets_20.png"
+    }
+  ],
+  "desserts": [
+    {
+      "id": 221,
+      "categoryId": 7,
+      "nom": "Sundae",
+      "prix": 2.80,
+      "description": "Glace vanille, coulis caramel ou fraise",
+      "image": "images/desserts/sunday.png"
+    },
+    {
+      "id": 222,
+      "categoryId": 7,
+      "nom": "McFlurry",
+      "prix": 3.20,
+      "description": "Glace onctueuse avec M&M's ou Smarties",
+      "image": "images/desserts/MCFleury.png"
+    },
+    {
+      "id": 223,
+      "categoryId": 7,
+      "nom": "Donut Chocolat",
+      "prix": 2.20,
+      "description": "Donut moelleux au chocolat fondant",
+      "image": "images/desserts/doghnut.png"
+    },
+    {
+      "id": 224,
+      "categoryId": 7,
+      "nom": "Cookie",
+      "prix": 1.80,
+      "description": "Cookie croustillant aux pépites de chocolat",
+      "image": "images/desserts/cookie.png"
+    },
+    {
+      "id": 225,
+      "categoryId": 7,
+      "nom": "Brownies",
+      "prix": 2.50,
+      "description": "Brownie au chocolat noir intense",
+      "image": "images/desserts/brownies.png"
+    },
+    {
+      "id": 226,
+      "categoryId": 7,
+      "nom": "Cheesecake Fraise",
+      "prix": 3.50,
+      "description": "Cheesecake crémeux au coulis de fraise",
+      "image": "images/desserts/cheesecake_fraise.png"
+    },
+    {
+      "id": 227,
+      "categoryId": 7,
+      "nom": "Cheesecake Chocolat & Noix de Coco",
+      "prix": 3.80,
+      "description": "Cheesecake chocolat avec éclats de coco",
+      "image": "images/desserts/cheesecake_choconuts_M&M_s.png"
+    },
+    {
+      "id": 228,
+      "categoryId": 7,
+      "nom": "Muffin",
+      "prix": 2.30,
+      "description": "Muffin moelleux aux pépites de chocolat",
+      "image": "images/desserts/muffin.png"
+    },
+    {
+      "id": 229,
+      "categoryId": 7,
+      "nom": "Macarons",
+      "prix": 3.90,
+      "description": "Assortiment de macarons colorés",
+      "image": "images/desserts/macarons.png"
+    }
+  ],
+  "menus":
+    {
+      "size": [
+        {
+          "id": 1,
+          "nom": "Menu Maxi Best Of"
+        },
+        {
+          "id": 2,
+          "nom": "Menu Best OF"
+        }
+      ],
+      "accompagnement": [
+        {
+          "id": 10,
+          "nom": "Frites",
+          "image": "images/images/illustration-maxi-best-of.png"
+        },
+        {
+          "id": 11,
+          "nom": "Potatoes",
+          "image": "images/images/illustration-best-of.png"
+        }
+      ]
+    },
+  "menu_produit": [
+    {
+      "id": 1,
+      "id_menu": 1,
+      "id_produit": 1
+    }
+  ],
+  "commandes": [
+    {
+      "id": 1,
+      "surplace_emporter": "sur_place",
+      "date_commande": "2025-11-20T12:45:00Z",
+      "total": 12.40
+    }
+  ],
+  "commande_menu": [
+    {
+      "id": 1,
+      "id_commande": 1,
+      "id_menu": 1,
+      "quantite": 1
+    }
+  ],
+  "commande_produit": [
+    {
+      "id": 1,
+      "id_commande": 1,
+      "id_produit": 2,
+      "quantite": 1
+    }
+  ]
+}

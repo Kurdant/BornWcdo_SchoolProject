@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/table-number.css">
+    <title>Enregistrement Table</title>
+</head>
+<body>
+    <div class="background-image"></div>
+    <div class="table-number-box">
+        <div class="table-number-img">
+            <img src="/Front/images/images/illustration-chevalet.png" alt="Numéro de table" />
+        </div>
+        <div class="table-number-content">
+            <h1>Pour être servis à table,</h1>
+            <p class="table-number-help">
+                Récupérez un chevalet et indiquez ici le numéro inscrit dessus
+            </p>
+            <div class="table-number-inputs">
+                <input type="text" maxlength="1" class="table-digit-input" value="2">
+                <input type="text" maxlength="1" class="table-digit-input" value="6">
+                <input type="text" maxlength="1" class="table-digit-input" value="1">
+            </div>
+            <button class="table-number-submit">Enregistrer le numéro</button>
+        </div>
+    </div>
+    <script>
+        document.querySelector('.table-number-submit').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.table-digit-input');
+            const numero = Array.from(inputs).map(i => i.value || '0').join('');
+            const chevalet = parseInt(numero, 10);
+            if (!chevalet || chevalet < 1 || chevalet > 999) {
+                alert('Numéro de table invalide (entre 001 et 999)');
+                return;
+            }
+            sessionStorage.setItem('numero_chevalet', chevalet);
+            window.location.href = 'menu-selection.html';
+        });
+        // Auto-focus champ suivant
+        document.querySelectorAll('.table-digit-input').forEach((input, i, all) => {
+            input.addEventListener('input', () => {
+                if (input.value && i < all.length - 1) all[i + 1].focus();
+            });
+        });
+    </script>
+</body>
+</html>

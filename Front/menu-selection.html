@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/menu-selection.css">
+    <script src="JS/menu-selection.js" defer></script>
+    <title>Selection Menu</title>
+</head>
+  
+    <div class="main">
+        <div class="selectFoodMenu">
+            <div class="selectFood">
+                <div class="categorieSelection">
+                    <div class="categorieArrow categorieArrowLeft">&#9664;</div>
+                    <div id="categorieList">
+                        <!-- Les catégories seront générées ici par createCategories() -->
+                    </div>
+                    <div class="categorieArrow categorieArrowRight">&#9654;</div>
+                </div>
+            </div>
+            <div class="menu">
+                <div class="menuSelection">
+                    <div class="menuSelectionTitre">Nos menus</div>
+                    <div class="menuSelectionDescription">Un sandwich, une friture ou une salade et une boisson</div>
+                    <div id="foodList" class="menuSelectionProduits">
+                        <!-- Les produits seront générés ici par createFoodItems() -->
+                    </div>
+
+                    <div id="modal">
+                        <div id="modalContent">
+                            <button id="backModal" class="modalBackBtn">Retour</button>
+                            <button id="closeModal" class="modalCloseBtn">&times;</button>
+                            <div class="first-step">
+                                <div class="modalDescription">
+                                    <h2>Une grosse faim ?</h2>
+                                    <div class="modalSubtitle">
+                                        Le menu maxi Best Of comprend un sandwich, une grande frite et une boisson 50 cl
+                                    </div>
+                                    <div class="modalMenus">
+                                        <div class="modalMenuItem" id="1">
+                                            <img src="/Front/images/images/illustration-maxi-best-of.png"
+                                                alt="Menu Maxi Best Of" class="modalMenuImg">
+                                            <div class="modalMenuLabel">Menu Maxi Best Of</div>
+                                        </div>
+                                        <div class="modalMenuItem" id="2">
+                                            <img src="/Front/images/images/illustration-best-of.png" alt="Menu Best Of"
+                                                class="modalMenuImg">
+                                            <div class="modalMenuLabel">Menu Best Of</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="second-step">
+                                <div class="modalDescription">
+                                    <h2>Choisissez votre accompagnement</h2>
+                                    <div class="modalSubtitle">
+                                        Frites, potatoes, la pomme de terre dans tous ses états
+                                    </div>
+                                    <div class="modalMenus">
+                                        <div class="modalMenuItem" id="3">
+                                            <img src="/Front/images/frites/MOYENNE_FRITE.png" alt="Menu Maxi Best Of"
+                                                class="modalMenuImg">
+                                            <div class="modalMenuLabel">Frites</div>
+                                        </div>
+                                        <div class="modalMenuItem" id="4">
+                                            <img src="/Front/images/frites/POTATOES.png" alt="Menu Best Of"
+                                                class="modalMenuImg">
+                                            <div class="modalMenuLabel">Potatoes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="third-step">
+                                <div class="modalDescription">
+                                    <h2>Choisissez votre boisson</h2>
+                                    <div class="modalSubtitle">
+                                        Un soda , un jus de fruit ou un verre d’eau pour accompagner votre repas
+                                    </div>
+                                    <div class="boissonMenu" style="display:flex; align-items:center;">
+                                        <div class="boissonsArrow boissonsArrowLeft">&#9664;</div>
+                                        <div id="boissonsMenu" class="modalMenus boissonsMenu"></div>
+                                        <div class="boissonsArrow boissonsArrowRight categorieArrow categorieArrowRight">&#9654;</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modalBoisson">
+                                <div class="modalDescription">
+                                    <h2>Choisissez votre boisson</h2>
+                                    <div class="modalSubtitle">
+                                        Un soda , un jus de fruit ou un verre d’eau pour accompagner votre repas
+                                    </div>
+                                    <div class="boissonMenu" style="display:flex; align-items:center;">
+                                        <div class="boissonsArrow boissonsArrowLeft">&#9664;</div>
+                                        <div id="boissonsMenuSimple" class="modalMenus boissonsMenu"></div>
+                                        <div class="boissonsArrow boissonsArrowRight">&#9654;</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modalTailleBoisson">
+                                <div class="modalDescription">
+                                    <h2>Une petite soif</h2>
+                                    <div class="modalSubtitle">
+                                        Choisissez la taille de votre boisson, +0.50€ pour le format 50 Cl
+                                    </div>
+                                    <div class="taillesBoisson">
+                                        <div class="tailleItem" data-boissonid="1">
+                                            <img id="boissonTailleSmall" src="" alt="">
+                                            <span>30 cl</span>
+                                        </div>
+                                        <div class="tailleItem" data-boissonid="2">
+                                            <img id="boissonTailleLarge" src="" alt="">
+                                            <span>50 cl</span>
+                                        </div>
+                                    </div>
+                                    <div class="Incrémentation">
+                                        <div class="Incrémenteur">
+                                            <div id="IncrémentationMinus" class="IncrémentationBoutton">
+                                                -
+                                            </div>
+                                            <div id="IncrémentationNumber">
+                                                1
+                                            </div>
+                                            <div id="IncrémentationPlus" class="IncrémentationBoutton">
+                                                +
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="boissonsButtons">
+                                    <button id="closeBoissonModal">Annuler</button>
+                                    <button id="sendBoisson" class="modalButton">Ajouter à ma commande</button>
+                                </div>
+                            </div>
+                            <button id="nextStep" class="modalButton">Étape suivante</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panier">
+            <div class="panierLogo"><img src="/Front/images/images/logo.png" /></div>
+            <div class="panierContent">
+                <div class="panierNumbers">
+                    <div>
+                        <div>Commande numéro</div>
+                        <div>Sur place : <b>326</b></div>
+                    </div>
+                    <div class="panierNumbersNumber">72</div>
+                </div>
+                <div class="panierOrder">
+
+                </div>
+            </div>
+            <div class="panierPay">
+                <div class="panierEnding">
+                    <div>
+                        <div>TOTAL</div>
+                        <div>(ttc)</div>
+                    </div>
+                    <div style="font-size:28px; font-weight:600;" id="prixFinal">0€</div>
+                </div>
+                <div class="panierEndingAbandonPay">
+                    <div class="panierEndingAbandon">Abandon</div>
+                    <div class="panierEndingPay">Payer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

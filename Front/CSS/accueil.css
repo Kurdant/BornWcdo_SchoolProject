@@ -1,0 +1,68 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+.background-image {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: url('../images/images/mc_landing_banner.png') no-repeat center center / cover;
+    z-index: 0;
+}
+
+.welcome-message {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 18px;
+    padding: 32px 48px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.08);
+    z-index: 2;
+    min-width: 370px;
+    max-width: 500px;
+}
+
+.welcome-message-title h1 {
+    margin: 0 0 45px 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.welcome-message-text h2 {
+    margin: 0 0 45px 0;
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+.welcome-message-choose {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 18px;
+}
+
+.welcome-message-choose div {
+    text-align: center;
+}
+
+.welcome-message-choose img {
+    width: 74px;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.welcome-message-choose p {
+    font-size: 1.08rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.chooseEatSelected{
+    border: #ffdd3e solid 4px;
+    border-radius: 10px;
+}

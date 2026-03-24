@@ -1,0 +1,100 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+.background-image {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: url('../images/images/mc_landing_banner.png') no-repeat center center / cover;
+    z-index: 0;
+}
+
+.table-number-box {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.08);
+    padding: 32px 42px 38px 42px;
+    min-width: 370px;
+    max-width: 480px;
+    z-index: 2;
+}
+
+.table-number-img img {
+    width: 120px;
+    height: auto;
+    display: block;
+    margin: -90px auto 14px auto;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px #0002;
+    background: #fff;
+}
+
+.table-number-content h1 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: left;
+}
+
+.table-number-help {
+    margin: 0 0 36px 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #151515;
+}
+
+.table-number-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin: 0 0 38px 0;
+}
+
+.table-digit-input {
+    width: 46px;
+    height: 65px;
+    font-size: 2.6rem;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    border-bottom: 6px solid #e2e2e2;
+    background: none;
+    outline: none;
+    color: #151515;
+    margin-bottom: 6px;
+    border-radius: 0;
+    transition: border-color 0.2s;
+}
+
+.table-digit-input:focus {
+    border-bottom: 6px solid #ffd700;
+}
+
+.table-number-submit {
+    margin-top: 10px;
+    background-color: #ffd700;
+    color: #222;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 40px;
+    font-size: 1.13rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 7px #f9d23c52;
+    transition: background 0.2s;
+}
+.table-number-submit:hover {
+    background: #e6be00;
+}

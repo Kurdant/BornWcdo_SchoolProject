@@ -1,0 +1,55 @@
+# docker-compose.registry.yml
+
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+    volumes:
+      - ./data/registry:/var/lib/registry
+      - ./auth/htpasswd:/auth/htpasswd:ro
+      - ./registry/config.yml:/etc/docker/registry/config.yml:ro
+    networks:
+      - registry-net
+      - admin_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      - "traefik.http.routers.wcdo-registry.rule=Host(`hugo-registry.a3n.fr`)"
+      - "traefik.http.routers.wcdo-registry.entrypoints=websecure"
+      - "traefik.http.routers.wcdo-registry.tls=true"
+      - "traefik.http.routers.wcdo-registry.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wcdo-registry.loadbalancer.server.port=5000"
+      - "traefik.http.routers.wcdo-registry.middlewares=wcdo-registry-ratelimit@docker"
+      - "traefik.http.middlewares.wcdo-registry-ratelimit.ratelimit.average=20"
+      - "traefik.http.middlewares.wcdo-registry-ratelimit.ratelimit.burst=50"
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-ui
+    restart: unless-stopped
+    environment:
+      - REGISTRY_TITLE=Registry-Privé
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - DELETE_IMAGES=true
+    networks:
+      - registry-net
+      - admin_proxy
+    depends_on:
+      - registry
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      - "traefik.http.routers.wcdo-registry-ui.rule=Host(`hugo-registry-ui.a3n.fr`)"
+      - "traefik.http.routers.wcdo-registry-ui.entrypoints=websecure"
+      - "traefik.http.routers.wcdo-registry-ui.tls=true"
+      - "traefik.http.routers.wcdo-registry-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wcdo-registry-ui.loadbalancer.server.port=80"
+
+networks:
+  registry-net:
+    driver: bridge
+  admin_proxy:
+    external: true

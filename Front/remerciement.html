@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/remerciement.css">
+    <title>Remerciement</title>
+</head>
+<body>
+    <div class="background-image"></div>
+    <div class="thankyou-container">
+        <div class="thankyou-card">
+            <h1>Toute l’équipe vous remercie,</h1>
+            <p class="thankyou-souhait">Et vous souhaite un bon appétit dans nos restaurants ,</p>
+            <div class="thankyou-bientot">A bientôt !</div>
+        </div>
+        <button class="thankyou-btn">Nouvelle commande</button>
+    </div>
+    <script>
+        // Affiche le numéro de commande si disponible
+        const numero = sessionStorage.getItem('numero_commande');
+        if (numero) {
+            const p = document.createElement('p');
+            p.style.cssText = 'font-size:1.3rem; font-weight:600; color:#FFC72C; margin:12px 0;';
+            p.textContent = `Commande n° ${numero}`;
+            document.querySelector('.thankyou-card').appendChild(p);
+        }
+        document.querySelector('.thankyou-btn').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = 'accueil.html';
+        });
+    </script>
+</body>
+</html>

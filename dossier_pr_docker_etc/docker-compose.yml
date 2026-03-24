@@ -1,0 +1,110 @@
+services:
+
+  # ── Base de données MariaDB ──────────────────────────────
+  db:
+    image: mariadb:10.11
+    container_name: wcdo-db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Backend PHP ──────────────────────────────────────────
+  php:
+    build: .
+    image: hugo-registry.a3n.fr/wcdo:dev
+    container_name: wcdo-php
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    networks:
+      - internal
+
+  # ── Nginx (front + reverse proxy PHP-FPM) ────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: wcdo-nginx
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      # Frontend
+      - "traefik.http.routers.wcdo-front.rule=Host(`wakdo-front.acadenice.fr`)"
+      - "traefik.http.routers.wcdo-front.entrypoints=websecure"
+      - "traefik.http.routers.wcdo-front.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.wcdo-front.service=wcdo-front"
+      - "traefik.http.services.wcdo-front.loadbalancer.server.port=80"
+      # Backend API
+      - "traefik.http.routers.wcdo-back.rule=Host(`wakdo-back.acadenice.fr`)"
+      - "traefik.http.routers.wcdo-back.entrypoints=websecure"
+      - "traefik.http.routers.wcdo-back.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.wcdo-back.service=wcdo-back"
+      - "traefik.http.services.wcdo-back.loadbalancer.server.port=80"
+    networks:
+      - internal
+      - admin_proxy
+
+  # ── Interface visuelle phpMyAdmin ────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: wcdo-phpmyadmin
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # ── GitHub Actions Runner ────────────────────────────────
+  runner:
+    image: myoung34/github-runner:latest
+    container_name: wcdo-runner
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - REPO_URL=https://github.com/Kurdant/BornMcdoFromScratch
+      - RUNNER_NAME=stark
+      - RUNNER_WORKDIR=/tmp/runner/work
+      - RUNNER_GROUP=Default
+      - RUNNER_LABELS=self-hosted,stark
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner_work:/tmp/runner
+    networks:
+      - internal
+
+volumes:
+  db_data:
+  runner_work:
+
+networks:
+  internal:
+  admin_proxy:
+    external: true

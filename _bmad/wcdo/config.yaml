@@ -1,0 +1,12 @@
+user_name: hugo
+communication_language: Francais
+project: WCDO
+module: wcdo
+description: Agents spécialisés pour le projet WCDO — Borne de commande McDonald's
+agents_installed:
+  - wcdo-backend
+  - wcdo-bdd
+  - wcdo-docker
+  - wcdo-front
+  - wcdo-examinateur
+output_folder: '{project-root}/_bmad-output/wcdo'

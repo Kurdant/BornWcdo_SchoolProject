@@ -154,6 +154,8 @@
             <a href="produits.html"     class="nav-item">📦 Produits</a>
             <a href="menus.html"        class="nav-item">🍔 Menus</a>
             <a href="utilisateurs.html" class="nav-item">👥 Utilisateurs</a>
+            <a href="preparation.html"  class="nav-item">🍳 Préparation</a>
+            <a href="accueil-bo.html"   class="nav-item">🛎️ Accueil comptoir</a>
         </nav>
         <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
     </aside>
@@ -231,7 +233,17 @@
        UTILITAIRES COMMUNS
     ========================================== */
 
-    async function checkAuth(rolesAutorises = []) {
+    
+        function escHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        async function checkAuth(rolesAutorises = []) {
         const role = sessionStorage.getItem('admin_role');
         const nom  = sessionStorage.getItem('admin_nom');
         if (!role) { window.location.href = 'login.html'; return null; }

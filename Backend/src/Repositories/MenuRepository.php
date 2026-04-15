@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\Menu;
 
-class MenuRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class MenuRepository extends BaseRepository
+{
 
     /**
      * Retourne tous les menus, avec leurs produits associés.

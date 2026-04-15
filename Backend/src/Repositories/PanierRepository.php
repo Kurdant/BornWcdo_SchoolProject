@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace WCDO\Repositories;
 
-use WCDO\Config\Database;
 use WCDO\Entities\Panier;
-use PDO;
 
-class PanierRepository
+use WCDO\Repositories\BaseRepository;
+
+class PanierRepository extends BaseRepository
 {
-    private PDO $pdo;
-
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
 
     /**
      * Récupère le panier d'une session (crée un nouveau s'il n'existe pas)

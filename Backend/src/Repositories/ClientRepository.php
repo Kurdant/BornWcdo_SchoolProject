@@ -2,18 +2,12 @@
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\Client;
 
-class ClientRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class ClientRepository extends BaseRepository
+{
 
     public function findById(int $id): ?Client
     {

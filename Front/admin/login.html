@@ -251,7 +251,7 @@
 
                     redirectByRole(admin.role);
                 } else {
-                    showError(result.error || 'Email ou mot de passe incorrect.');
+                    showError(result.error || result.message || 'Email ou mot de passe incorrect.');
                 }
             } catch (err) {
                 console.error('Erreur login:', err);

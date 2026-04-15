@@ -2,18 +2,12 @@
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\PanierLigne;
 
-class PanierProduitRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class PanierProduitRepository extends BaseRepository
+{
 
     /**
      * Récupère toutes les lignes d'un panier

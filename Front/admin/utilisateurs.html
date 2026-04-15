@@ -98,6 +98,8 @@
             <a href="produits.html"     class="nav-item">📦 Produits</a>
             <a href="menus.html"        class="nav-item">🍔 Menus</a>
             <a href="utilisateurs.html" class="nav-item active">👥 Utilisateurs</a>
+            <a href="preparation.html"  class="nav-item">🍳 Préparation</a>
+            <a href="accueil-bo.html"   class="nav-item">🛎️ Accueil comptoir</a>
         </nav>
         <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
     </aside>
@@ -176,7 +178,17 @@
     let currentUserId; // ID de l'utilisateur connecté
 
     /* === UTILS === */
-    async function checkAuth(roles = []) {
+    
+        function escHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        async function checkAuth(roles = []) {
         const role = sessionStorage.getItem('admin_role');
         const nom  = sessionStorage.getItem('admin_nom');
         if (!role) { window.location.href = 'login.html'; return null; }
@@ -252,15 +264,15 @@
                     <td>
                         <div class="user-cell">
                             <div class="avatar">${initials(u.nom)}</div>
-                            <strong>${u.nom}${selfTag}</strong>
+                            <strong>${escHtml(u.nom)}${selfTag}</strong>
                         </div>
                     </td>
-                    <td>${u.email}</td>
+                    <td>${escHtml(u.email)}</td>
                     <td>${roleBadge[u.role] || u.role}</td>
                     <td>
                         <div class="actions-cell">
                             <button class="btn btn-edit" onclick="openModal('edit',${u.id})" ${disabledAttr}>✏️</button>
-                            <button class="btn btn-danger" onclick="deleteUser(${u.id},'${u.nom.replace(/'/g,"\\'")}','${u.email}')" ${disabledAttr}>🗑️</button>
+                            <button class="btn btn-danger" onclick="deleteUser(${u.id},'${u.nom.replace(/'/g,"\\'")}','${escHtml(u.email)}')" ${disabledAttr}>🗑️</button>
                         </div>
                     </td>
                 </tr>`;

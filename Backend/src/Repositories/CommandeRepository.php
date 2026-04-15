@@ -2,18 +2,12 @@
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\Commande;
 
-class CommandeRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class CommandeRepository extends BaseRepository
+{
 
     /**
      * Crée une commande (RG-007 : créée UNIQUEMENT après paiement validé)

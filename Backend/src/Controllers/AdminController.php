@@ -78,6 +78,8 @@ class AdminController
         $_SESSION['admin_id']   = $admin->getId();
         $_SESSION['admin_role'] = $admin->getRole(); // Stocké pour verifierRole()
 
+        session_regenerate_id(true); // Prévenir la fixation de session
+
         Response::success([
             'admin'   => $admin->toArray(),
             'message' => 'Connexion admin réussie',
@@ -192,7 +194,7 @@ class AdminController
         $description = trim($body['description'] ?? $produit->getDescription() ?? '');
         $prix        = $body['prix']        ?? $produit->getPrix();
         $stock       = $body['stock']       ?? $produit->getStock();
-        $idCategorie = $body['id_categorie'] ?? $produit->getCategorieId();
+        $idCategorie = $body['id_categorie'] ?? $produit->getIdCategorie();
         $image       = trim($body['image']   ?? $produit->getImage() ?? '');
 
         if (empty($nom)) {
@@ -687,6 +689,15 @@ class AdminController
         if (empty($typeCommande) || empty($modePaiement)) {
             Response::error('type_commande et mode_paiement sont requis', 400);
         }
+
+        $typesValides    = ['comptoir', 'telephone', 'salle'];
+        $paiementsValides = ['carte', 'especes', 'cheque'];
+        if (!in_array($typeCommande, $typesValides, true)) {
+            Response::error('type_commande invalide. Valeurs : ' . implode(', ', $typesValides), 400);
+        }
+        if (!in_array($modePaiement, $paiementsValides, true)) {
+            Response::error('mode_paiement invalide. Valeurs : ' . implode(', ', $paiementsValides), 400);
+        }
         if (!is_array($produits) || empty($produits)) {
             Response::error('produits est requis et ne peut pas être vide', 400);
         }
@@ -705,8 +716,8 @@ class AdminController
             $montantTotal += $qte * $prix;
         }
 
-        // Générer un numéro de commande unique (même format que CommandeService)
-        $numeroCommande = 'CMD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
+        // Générer un numéro de commande unique (crypto-safe, pas de collision)
+        $numeroCommande = 'CMD-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(4)));
 
         $commandeObj = new Commande(
             id:             0, // AUTO_INCREMENT
@@ -738,6 +749,9 @@ class AdminController
                     details:      $ligne['details'] ?? null,
                 );
                 $this->commandeProduitRepo->addFromPanierLigne($commandeCreee->getId(), $panierLigne);
+
+                // Décrémenter le stock (comme CommandeService::creer())
+                $this->produitRepo->updateStock((int) $ligne['id_produit'], (int) $ligne['quantite']);
             }
 
             $this->pdo->commit();

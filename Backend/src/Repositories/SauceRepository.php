@@ -2,18 +2,12 @@
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\Sauce;
 
-class SauceRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class SauceRepository extends BaseRepository
+{
 
     public function findAll(): array
     {

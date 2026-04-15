@@ -2,18 +2,12 @@
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\PanierLigne;
 
-class CommandeProduitRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class CommandeProduitRepository extends BaseRepository
+{
 
     /**
      * Ajoute une ligne de commande à partir d'une ligne de panier

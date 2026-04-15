@@ -202,6 +202,16 @@
         /* ==========================================
            UTILS
         ========================================== */
+        
+        function escHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         async function checkAuth(roles = []) {
             const role = sessionStorage.getItem('admin_role');
             const nom  = sessionStorage.getItem('admin_nom');
@@ -281,13 +291,12 @@
             if (showLoader) document.getElementById('loading-overlay').classList.add('show');
 
             try {
-                const res = await apiFetch('/api/admin/commandes');
+                const res = await apiFetch('/api/admin/commandes/preparation');
                 if (!res) return;
                 const result = await res.json();
                 if (!result.success) { showToast('Erreur chargement commandes', 'error'); return; }
 
-                const toutes = result.data || [];
-                const nouvelles = toutes.filter(c => c.statut === 'en_attente');
+                const nouvelles = result.data || [];
 
                 // Détecter si de nouvelles commandes sont apparues (par rapport à l'état précédent)
                 const ancienIds = new Set(commandesEnAttente.map(c => c.id));
@@ -329,9 +338,14 @@
             emptyState.style.display = 'none';
 
             // Trier par date de création (plus ancienne en premier)
-            const sorted = [...commandesEnAttente].sort((a, b) =>
-                new Date(a.date_creation || 0) - new Date(b.date_creation || 0)
-            );
+            const sorted = [...commandesEnAttente].sort((a, b) => {
+                if (a.heure_livraison && b.heure_livraison) {
+                    return a.heure_livraison.localeCompare(b.heure_livraison);
+                }
+                if (a.heure_livraison) return -1; // commandes avec heure prioritaires
+                if (b.heure_livraison) return 1;
+                return new Date(a.date_creation || 0) - new Date(b.date_creation || 0);
+            });
 
             grid.innerHTML = sorted.map(c => buildOrderCard(c)).join('');
         }
@@ -349,7 +363,7 @@
                 livr.setHours(parseInt(h), parseInt(m), 0, 0);
                 const diffMin = (livr - now) / 60000;
                 const cls = diffMin < 5 ? 'heure-urgente' : 'heure-normale';
-                heureHtml = `<span class="heure-livraison ${cls}">⏰ ${c.heure_livraison}</span>`;
+                heureHtml = `<span class="heure-livraison ${cls}">⏰ ${escHtml(c.heure_livraison)}</span>`;
             }
 
             // Liste des produits

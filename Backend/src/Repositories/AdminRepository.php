@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace WCDO\Repositories;
 
-use PDO;
-use WCDO\Config\Database;
 use WCDO\Entities\Admin;
 
-class AdminRepository
-{
-    private PDO $pdo;
+use WCDO\Repositories\BaseRepository;
 
-    public function __construct()
-    {
-        $this->pdo = Database::getInstance();
-    }
+class AdminRepository extends BaseRepository
+{
 
     public function findById(int $id): ?Admin
     {

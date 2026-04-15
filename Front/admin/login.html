@@ -244,13 +244,12 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    // Stocker les infos dans sessionStorage
-                    sessionStorage.setItem('admin_role', result.data.role);
-                    sessionStorage.setItem('admin_nom',  result.data.nom);
-                    sessionStorage.setItem('admin_id',   result.data.id);
+                    const admin = result.data.admin;
+                    sessionStorage.setItem('admin_role', admin.role);
+                    sessionStorage.setItem('admin_nom',  admin.nom);
+                    sessionStorage.setItem('admin_id',   admin.id);
 
-                    // Rediriger selon le rôle
-                    redirectByRole(result.data.role);
+                    redirectByRole(admin.role);
                 } else {
                     showError(result.error || 'Email ou mot de passe incorrect.');
                 }

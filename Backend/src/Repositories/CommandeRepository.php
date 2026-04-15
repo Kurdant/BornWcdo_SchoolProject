@@ -12,7 +12,7 @@ class CommandeRepository
 
     public function __construct()
     {
-        $this->pdo = Database::getInstance()->getConnection();
+        $this->pdo = Database::getInstance();
     }
 
     /**
@@ -30,18 +30,20 @@ class CommandeRepository
     {
         // Prépare la requête SQL avec des paramètres nommés (:clé) pour éviter les injections SQL
         $stmt = $this->pdo->prepare(
-            'INSERT INTO COMMANDE 
-             (numero_commande, numero_chevalet, type_commande, mode_paiement, montant_total, client_id)
-             VALUES (:numero_commande, :numero_chevalet, :type_commande, :mode_paiement, :montant_total, :client_id)'
+            'INSERT INTO COMMANDE
+             (numero_commande, numero_chevalet, type_commande, mode_paiement, montant_total, client_id, statut, heure_livraison)
+             VALUES (:numero_commande, :numero_chevalet, :type_commande, :mode_paiement, :montant_total, :client_id, :statut, :heure_livraison)'
         );
 
         $stmt->execute([
-            'numero_commande' => $commande->numeroCommande(),
-            'numero_chevalet' => $commande->numeroChevalet(),
-            'type_commande' => $commande->typeCommande(),
-            'mode_paiement' => $commande->modePaiement(),
-            'montant_total' => $commande->montantTotal(),
-            'client_id' => $commande->clientId()  // NULL si client anonyme (RG-009)
+            'numero_commande'  => $commande->getNumeroCommande(),
+            'numero_chevalet'  => $commande->getNumeroChevalet(),
+            'type_commande'    => $commande->getTypeCommande(),
+            'mode_paiement'    => $commande->getModePaiement(),
+            'montant_total'    => $commande->getMontantTotal(),
+            'client_id'        => $commande->getClientId(),       // NULL si client anonyme (RG-009)
+            'statut'           => $commande->getStatut(),         // en_attente par défaut
+            'heure_livraison'  => $commande->getHeureLivraison(), // NULL initialement
         ]);
 
         // lastInsertId() récupère l'ID généré automatiquement par MariaDB (AUTO_INCREMENT)
@@ -49,15 +51,39 @@ class CommandeRepository
 
         // Retourne un nouvel objet Commande hydraté avec l'ID et la date du serveur
         return new Commande(
-            id: $id,
-            numeroCommande: $commande->numeroCommande(),
-            numeroChevalet: $commande->numeroChevalet(),
-            typeCommande: $commande->typeCommande(),
-            modePaiement: $commande->modePaiement(),
-            montantTotal: $commande->montantTotal(),
-            clientId: $commande->clientId(),
-            dateCreation: new \DateTime()
+            id:             $id,
+            numeroCommande: $commande->getNumeroCommande(),
+            numeroChevalet: $commande->getNumeroChevalet(),
+            typeCommande:   $commande->getTypeCommande(),
+            modePaiement:   $commande->getModePaiement(),
+            montantTotal:   $commande->getMontantTotal(),
+            dateCreation:   date('Y-m-d H:i:s'),
+            clientId:       $commande->getClientId(),
+            statut:         $commande->getStatut(),
+            heureLivraison: $commande->getHeureLivraison(),
         );
+    }
+
+    /**
+     * Récupère une commande par son ID (clé primaire).
+     *
+     * Utilisé par CommandeAdminService pour charger et vérifier le statut
+     * avant une transition (en_attente → preparee → livree).
+     *
+     * @param int $id L'ID de la commande en BDD
+     * @return ?Commande L'objet hydraté, ou null si inexistant
+     */
+    public function findById(int $id): ?Commande
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement,
+                    montant_total, date_creation, client_id, statut, heure_livraison
+             FROM COMMANDE WHERE id = :id'
+        );
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->hydrateCommande($row) : null;
     }
 
     /**
@@ -76,7 +102,8 @@ class CommandeRepository
     {
         // Prépare avec paramètre nommé pour éviter les injections SQL
         $stmt = $this->pdo->prepare(
-            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement, montant_total, date_creation, client_id
+            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement,
+                    montant_total, date_creation, client_id, statut, heure_livraison
              FROM COMMANDE
              WHERE numero_commande = :numero_commande'
         );
@@ -100,14 +127,15 @@ class CommandeRepository
     public function findAll(): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement, montant_total, date_creation, client_id
+            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement,
+                    montant_total, date_creation, client_id, statut, heure_livraison
              FROM COMMANDE
              ORDER BY date_creation DESC'  // Plus récentes d'abord
         );
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Retourne un tableau de lignes
 
-        // Transforme chaque ligne en objet Commande via hydrateProduit()
+        // Transforme chaque ligne en objet Commande via hydrateCommande()
         $commandes = [];
         foreach ($rows as $row) {
             $commandes[] = $this->hydrateCommande($row);
@@ -127,7 +155,8 @@ class CommandeRepository
     public function findByClientId(int $clientId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement, montant_total, date_creation, client_id
+            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement,
+                    montant_total, date_creation, client_id, statut, heure_livraison
              FROM COMMANDE
              WHERE client_id = :client_id
              ORDER BY date_creation DESC'
@@ -140,6 +169,56 @@ class CommandeRepository
             $commandes[] = $this->hydrateCommande($row);
         }
         return $commandes;
+    }
+
+    /**
+     * Récupère toutes les commandes ayant un statut précis.
+     * Triées par heure_livraison ASC, les NULL en dernier (ISNULL trick MariaDB/MySQL).
+     *
+     * @return Commande[]
+     */
+    public function findByStatut(string $statut): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, numero_commande, numero_chevalet, type_commande, mode_paiement,
+                    montant_total, date_creation, client_id, statut, heure_livraison
+             FROM COMMANDE
+             WHERE statut = :statut
+             ORDER BY ISNULL(heure_livraison) ASC, heure_livraison ASC'
+        );
+        $stmt->execute(['statut' => $statut]);
+
+        $commandes = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $commandes[] = $this->hydrateCommande($row);
+        }
+        return $commandes;
+    }
+
+    /**
+     * Alias lisible pour l'écran de préparation : retourne les commandes en attente.
+     * Triées par heure_livraison ASC (NULL en dernier = sans heure imposée passent après).
+     *
+     * @return Commande[]
+     */
+    public function findForPreparation(): array
+    {
+        return $this->findByStatut(Commande::STATUS_EN_ATTENTE);
+    }
+
+    /**
+     * Met à jour le statut d'une commande (en_attente → preparee → livree).
+     */
+    public function updateStatut(int $id, string $statut): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE COMMANDE SET statut = :statut WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'statut' => $statut,
+            'id'     => $id,
+        ]);
     }
 
     /**
@@ -156,14 +235,16 @@ class CommandeRepository
     private function hydrateCommande(array $row): Commande
     {
         return new Commande(
-            id: (int) $row['id'],  // Cast string → int
-            numeroCommande: $row['numero_commande'],  // Reste string (ex: "cmd_abc123")
-            numeroChevalet: (int) $row['numero_chevalet'],  // RG-004 : 1-999
-            typeCommande: $row['type_commande'],  // ENUM BDD (ex: "emporter", "surplace")
-            modePaiement: $row['mode_paiement'],  // ENUM BDD (ex: "carte", "especes")
-            montantTotal: (float) $row['montant_total'],  // Cast string → float (ex: "12.50")
-            clientId: $row['client_id'] ? (int) $row['client_id'] : null,  // Nullable (RG-009)
-            dateCreation: new \DateTime($row['date_creation'])  // Chaîne SQL → objet DateTime
+            id:             (int) $row['id'],
+            numeroCommande: $row['numero_commande'],
+            numeroChevalet: (int) $row['numero_chevalet'],       // RG-004 : 1-999
+            typeCommande:   $row['type_commande'],               // ENUM BDD
+            modePaiement:   $row['mode_paiement'],               // ENUM BDD
+            montantTotal:   (float) $row['montant_total'],       // Cast string → float
+            dateCreation:   $row['date_creation'],               // String directe depuis la BDD
+            clientId:       $row['client_id'] !== null ? (int) $row['client_id'] : null, // Nullable (RG-009)
+            statut:         $row['statut'],
+            heureLivraison: $row['heure_livraison'],             // Nullable string
         );
     }
 }

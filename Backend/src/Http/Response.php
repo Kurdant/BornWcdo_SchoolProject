@@ -6,6 +6,11 @@ namespace WCDO\Http;
 
 class Response
 {
+    public static function success(mixed $data, int $statusCode = 200): never
+    {
+        self::json(['success' => true, 'data' => $data], $statusCode);
+    }
+
     public static function json(mixed $data, int $statusCode = 200): never
     {
         http_response_code($statusCode);

@@ -10,7 +10,7 @@
     <div class="background-image"></div>
     <div class="table-number-box">
         <div class="table-number-img">
-            <img src="/Front/images/images/illustration-chevalet.png" alt="Numéro de table" />
+            <img src="/images/images/illustration-chevalet.png" alt="Numéro de table" />
         </div>
         <div class="table-number-content">
             <h1>Pour être servis à table,</h1>
@@ -26,6 +26,8 @@
         </div>
     </div>
     <script>
+        const API_BASE = 'https://wakdo-back.acadenice.fr/api';
+
         document.querySelector('.table-number-submit').addEventListener('click', () => {
             const inputs = document.querySelectorAll('.table-digit-input');
             const numero = Array.from(inputs).map(i => i.value || '0').join('');
@@ -35,8 +37,30 @@
                 return;
             }
             sessionStorage.setItem('numero_chevalet', chevalet);
-            window.location.href = 'menu-selection.html';
+
+            fetch(`${API_BASE}/commande`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type_commande:   'sur_place',
+                    numero_chevalet: chevalet,
+                    mode_paiement:   'carte'
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                const numeroCommande = res.data && res.data.commande && res.data.commande.numero_commande;
+                if (res.success && numeroCommande) {
+                    sessionStorage.setItem('numero_commande', numeroCommande);
+                    window.location.href = 'remerciement.html';
+                } else {
+                    alert((res.data && res.data.message) || res.message || res.error || 'Erreur lors de la commande');
+                }
+            })
+            .catch(err => alert('Erreur réseau : ' + err));
         });
+
         // Auto-focus champ suivant
         document.querySelectorAll('.table-digit-input').forEach((input, i, all) => {
             input.addEventListener('input', () => {

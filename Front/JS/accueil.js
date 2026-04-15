@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // LOGIN BUTTON
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      window.location.href = 'login.html';
+    });
+  }
+
+  // CHOOSE DELIVERY MODE
   document.querySelectorAll('.chooseEat').forEach((item, index) => {
     item.addEventListener('click', () => {
       const old = document.querySelector('.chooseEatSelected');
@@ -8,12 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const type = index === 0 ? 'sur_place' : 'a_emporter';
       sessionStorage.setItem('type_commande', type);
 
-      if (type === 'sur_place') {
-        window.location.href = 'table-number.html';
-      } else {
-        sessionStorage.setItem('numero_chevalet', '1');
-        window.location.href = 'menu-selection.html';
-      }
+      window.location.href = 'menu-selection.html';
     });
   });
 });

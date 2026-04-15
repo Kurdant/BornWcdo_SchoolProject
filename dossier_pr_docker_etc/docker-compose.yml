@@ -29,7 +29,7 @@ services:
     container_name: wcdo-php
     restart: unless-stopped
     volumes:
-      - .:/app
+      - ..:/app
     depends_on:
       db:
         condition: service_healthy
@@ -43,7 +43,7 @@ services:
     container_name: wcdo-nginx
     restart: unless-stopped
     volumes:
-      - .:/app
+      - ..:/app
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
@@ -107,4 +107,4 @@ volumes:
 networks:
   internal:
   admin_proxy:
-    external: true
+    external: false

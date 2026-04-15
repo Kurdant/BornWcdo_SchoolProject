@@ -17,14 +17,15 @@ class SauceRepository
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->prepare('SELECT id, nom FROM SAUCE ORDER BY nom ASC');
+        $stmt = $this->pdo->prepare('SELECT id, nom, image FROM SAUCE ORDER BY nom ASC');
         $stmt->execute();
         
         $sauces = [];
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $sauces[] = new Sauce(
                 id: $row['id'],
-                nom: $row['nom']
+                nom: $row['nom'],
+                image: $row['image']
             );
         }
         
@@ -33,7 +34,7 @@ class SauceRepository
 
     public function findById(int $id): ?Sauce
     {
-        $stmt = $this->pdo->prepare('SELECT id, nom FROM SAUCE WHERE id = :id');
+        $stmt = $this->pdo->prepare('SELECT id, nom, image FROM SAUCE WHERE id = :id');
         $stmt->execute(['id' => $id]);
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -44,7 +45,8 @@ class SauceRepository
         
         return new Sauce(
             id: $row['id'],
-            nom: $row['nom']
+            nom: $row['nom'],
+            image: $row['image']
         );
     }
 

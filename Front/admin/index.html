@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO Admin — Dashboard</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+
+        /* === LAYOUT === */
+        .layout { display: flex; min-height: 100vh; }
+
+        /* === SIDEBAR === */
+        .sidebar {
+            width: 260px; min-height: 100vh; background: #16213e; color: #fff;
+            display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+        }
+        .sidebar-header { padding: 1.5rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-logo { font-size: 1.4rem; font-weight: 900; color: #e63946; letter-spacing: 1px; }
+        .user-block { margin-top: 0.85rem; }
+        .user-nom { display: block; font-weight: 600; font-size: 0.9rem; color: #fff; }
+        .user-role-badge {
+            display: inline-block; margin-top: 0.3rem; padding: 0.15rem 0.6rem;
+            border-radius: 12px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+            background: rgba(230,57,70,0.2); color: #e63946; border: 1px solid rgba(230,57,70,0.4);
+        }
+        .sidebar-nav { flex: 1; padding: 0.75rem 0; overflow-y: auto; }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.85rem 1.25rem; color: rgba(255,255,255,0.65);
+            text-decoration: none; font-size: 0.92rem;
+            transition: background 0.15s, color 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .nav-item.active {
+            background: rgba(230,57,70,0.12); color: #e63946;
+            border-left-color: #e63946; font-weight: 600;
+        }
+        .btn-logout {
+            margin: 1rem 1.25rem; padding: 0.7rem;
+            background: rgba(230,57,70,0.12); color: #e63946;
+            border: 1px solid rgba(230,57,70,0.35); border-radius: 8px;
+            cursor: pointer; font-size: 0.88rem; font-family: inherit; font-weight: 600;
+            width: calc(100% - 2.5rem); transition: background 0.2s, color 0.2s;
+        }
+        .btn-logout:hover { background: #e63946; color: #fff; }
+
+        /* === MAIN CONTENT === */
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { font-size: 1.7rem; font-weight: 800; color: #1a1a2e; }
+        .page-header .subtitle { color: #888; font-size: 0.9rem; margin-top: 0.25rem; }
+
+        /* === STATS GRID === */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.25rem; margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #fff; border-radius: 8px; padding: 1.4rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            display: flex; align-items: center; gap: 1.1rem;
+        }
+        .stat-icon {
+            font-size: 1.8rem; width: 54px; height: 54px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .stat-icon.red    { background: rgba(230,57,70,0.1); }
+        .stat-icon.orange { background: rgba(255,152,0,0.1); }
+        .stat-icon.blue   { background: rgba(33,150,243,0.1); }
+        .stat-icon.green  { background: rgba(42,157,143,0.1); }
+        .stat-info .stat-label { font-size: 0.75rem; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+        .stat-value { font-size: 1.9rem; font-weight: 800; color: #1a1a2e; line-height: 1.2; }
+
+        /* === CARD === */
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; }
+        .card-header {
+            padding: 1.1rem 1.5rem; border-bottom: 1px solid #f0f0f0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-header h2 { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; }
+        .btn-icon-refresh {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.1rem; color: #888; padding: 0.3rem;
+            border-radius: 6px; transition: background 0.15s, color 0.15s;
+        }
+        .btn-icon-refresh:hover { background: #f0f0f0; color: #e63946; }
+
+        /* === TABLE === */
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #1a1a2e; color: #fff;
+            padding: 0.85rem 1rem; text-align: left;
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        td { padding: 0.85rem 1rem; border-bottom: 1px solid #f4f4f4; font-size: 0.88rem; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: #fafafa; }
+        tr:hover td { background: #f5f5f5; }
+        .loading-row td { text-align: center; padding: 2.5rem; color: #aaa; }
+        .empty-row td { text-align: center; padding: 2.5rem; color: #aaa; font-style: italic; }
+
+        /* === BADGES === */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.2rem 0.65rem; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3px;
+        }
+        .badge-orange { background: rgba(255,152,0,0.12); color: #d84315; border: 1px solid rgba(255,152,0,0.3); }
+        .badge-blue   { background: rgba(33,150,243,0.12); color: #1565c0; border: 1px solid rgba(33,150,243,0.3); }
+        .badge-green  { background: rgba(42,157,143,0.12); color: #1b7a6d; border: 1px solid rgba(42,157,143,0.3); }
+
+        /* === SPINNER === */
+        .spinner {
+            display: inline-block; width: 18px; height: 18px;
+            border: 2px solid rgba(0,0,0,0.08); border-top-color: #e63946;
+            border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === TOAST === */
+        .toast-container {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .toast {
+            padding: 0.8rem 1.2rem; border-radius: 8px; color: #fff;
+            font-size: 0.88rem; font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2); min-width: 240px;
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success { background: #2a9d8f; }
+        .toast-error   { background: #e63946; }
+        @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🍔 WCDO Admin</div>
+            <div class="user-block">
+                <span class="user-nom" id="user-nom">…</span>
+                <span class="user-role-badge" id="user-role"></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html"        class="nav-item active">📊 Dashboard</a>
+            <a href="produits.html"     class="nav-item">📦 Produits</a>
+            <a href="menus.html"        class="nav-item">🍔 Menus</a>
+            <a href="utilisateurs.html" class="nav-item">👥 Utilisateurs</a>
+        </nav>
+        <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>📊 Dashboard</h1>
+            <p class="subtitle" id="date-display"></p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon red">📋</div>
+                <div class="stat-info">
+                    <div class="stat-label">Commandes du jour</div>
+                    <div class="stat-value" id="stat-total">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">⏳</div>
+                <div class="stat-info">
+                    <div class="stat-label">En attente</div>
+                    <div class="stat-value" id="stat-attente">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">Préparées</div>
+                    <div class="stat-value" id="stat-preparees">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">💶</div>
+                <div class="stat-info">
+                    <div class="stat-label">CA du jour</div>
+                    <div class="stat-value" id="stat-ca">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DERNIÈRES COMMANDES -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Dernières commandes</h2>
+                <button class="btn-icon-refresh" onclick="loadCommandes()" title="Rafraîchir">🔄</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#Commande</th>
+                        <th>Chevalet</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Heure</th>
+                    </tr>
+                </thead>
+                <tbody id="commandes-tbody">
+                    <tr class="loading-row">
+                        <td colspan="6"><span class="spinner"></span> Chargement…</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+    /* ==========================================
+       UTILITAIRES COMMUNS
+    ========================================== */
+
+    async function checkAuth(rolesAutorises = []) {
+        const role = sessionStorage.getItem('admin_role');
+        const nom  = sessionStorage.getItem('admin_nom');
+        if (!role) { window.location.href = 'login.html'; return null; }
+        if (rolesAutorises.length && !rolesAutorises.includes(role)) {
+            window.location.href = 'index.html'; return null;
+        }
+        return { role, nom };
+    }
+
+    async function logout() {
+        try { await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }); } catch (e) { /* ignorer */ }
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Helper fetch avec gestion automatique du 401
+    async function apiFetch(url, options = {}) {
+        const res = await fetch(url, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        if (res.status === 401) { window.location.href = 'login.html'; return null; }
+        return res;
+    }
+
+    /* ==========================================
+       INITIALISATION
+    ========================================== */
+    (async function init() {
+        const user = await checkAuth(['administration']);
+        if (!user) return;
+
+        // Afficher les infos utilisateur dans la sidebar
+        document.getElementById('user-nom').textContent  = user.nom;
+        document.getElementById('user-role').textContent = user.role;
+
+        // Date du jour en français
+        document.getElementById('date-display').textContent =
+            new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        await loadCommandes();
+    })();
+
+    /* ==========================================
+       CHARGEMENT ET AFFICHAGE DES COMMANDES
+    ========================================== */
+    async function loadCommandes() {
+        document.getElementById('commandes-tbody').innerHTML =
+            '<tr class="loading-row"><td colspan="6"><span class="spinner"></span> Chargement…</td></tr>';
+
+        try {
+            const res = await apiFetch('/api/admin/commandes');
+            if (!res) return;
+
+            const result = await res.json();
+            if (!result.success) { showToast('Erreur chargement commandes', 'error'); return; }
+
+            const commandes = result.data || [];
+
+            // Filtrer les commandes du jour
+            const today = new Date().toISOString().split('T')[0];
+            const duJour = commandes.filter(c => (c.date_creation || '').startsWith(today));
+
+            // Calculer les statistiques
+            const enAttente  = duJour.filter(c => c.statut === 'en_attente').length;
+            const preparees  = duJour.filter(c => c.statut === 'preparee').length;
+            const caDuJour   = duJour.reduce((s, c) => s + parseFloat(c.montant_total || 0), 0);
+
+            document.getElementById('stat-total').textContent     = duJour.length;
+            document.getElementById('stat-attente').textContent   = enAttente;
+            document.getElementById('stat-preparees').textContent = preparees;
+            document.getElementById('stat-ca').textContent        = caDuJour.toFixed(2) + ' €';
+
+            // Afficher les 10 dernières commandes (toutes dates confondues)
+            const dernieres = [...commandes]
+                .sort((a, b) => new Date(b.date_creation || 0) - new Date(a.date_creation || 0))
+                .slice(0, 10);
+
+            renderTable(dernieres);
+
+        } catch (err) {
+            console.error('Erreur loadCommandes:', err);
+            showToast('Erreur réseau', 'error');
+        }
+    }
+
+    function renderTable(commandes) {
+        const tbody = document.getElementById('commandes-tbody');
+
+        if (!commandes.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucune commande trouvée</td></tr>';
+            return;
+        }
+
+        const badgeMap = {
+            'en_attente': ['badge-orange', '⏳ En attente'],
+            'preparee':   ['badge-blue',   '✅ Préparée'],
+            'livree':     ['badge-green',  '🟢 Livrée']
+        };
+        const typeMap = { 'sur_place': '🪑 Sur place', 'a_emporter': '🥡 À emporter' };
+
+        tbody.innerHTML = commandes.map(c => {
+            const [cls, lbl] = badgeMap[c.statut] || ['badge-orange', c.statut];
+            const heure = c.date_creation
+                ? new Date(c.date_creation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                : '—';
+            return `
+                <tr>
+                    <td><strong>#${c.numero_commande || c.id}</strong></td>
+                    <td>${c.numero_chevalet || '—'}</td>
+                    <td>${typeMap[c.type_commande] || c.type_commande || '—'}</td>
+                    <td><strong>${parseFloat(c.montant_total || 0).toFixed(2)} €</strong></td>
+                    <td><span class="badge ${cls}">${lbl}</span></td>
+                    <td>${heure}</td>
+                </tr>`;
+        }).join('');
+    }
+</script>
+</body>
+</html>

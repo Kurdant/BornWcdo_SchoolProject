@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO — Accueil / Comptoir</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* === HEADER === */
+        .header {
+            background: #16213e; color: #fff;
+            padding: 0.9rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid #e63946;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .header-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .header-brand h1 { font-size: 1.2rem; font-weight: 900; color: #e63946; letter-spacing: 1px; }
+        .header-brand .subtitle { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+        .header-right { display: flex; align-items: center; gap: 1.25rem; font-size: 0.88rem; color: rgba(255,255,255,0.75); }
+        .header-right strong { color: #fff; }
+        .btn-logout-header { padding: 0.45rem 0.9rem; background: rgba(230,57,70,0.15); color: #e63946; border: 1px solid rgba(230,57,70,0.4); border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-family: inherit; font-weight: 600; transition: background 0.2s, color 0.2s; }
+        .btn-logout-header:hover { background: #e63946; color: #fff; }
+
+        /* === TWO COLUMNS LAYOUT === */
+        .page-body {
+            flex: 1; display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 0; min-height: calc(100vh - 56px);
+        }
+
+        /* === COLONNE GAUCHE — Commandes prêtes === */
+        .col-left {
+            background: #fff; border-right: 2px solid #e8e8e8;
+            display: flex; flex-direction: column;
+        }
+        .col-header {
+            padding: 1.1rem 1.25rem; border-bottom: 1px solid #f0f0f0;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 56px; background: #fff; z-index: 10;
+        }
+        .col-header h2 { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+        .col-header .count-badge {
+            background: rgba(42,157,143,0.12); color: #1b7a6d;
+            border: 1px solid rgba(42,157,143,0.3);
+            padding: 0.15rem 0.6rem; border-radius: 12px;
+            font-size: 0.78rem; font-weight: 700;
+        }
+        .btn-icon-refresh { background: none; border: none; cursor: pointer; color: #aaa; font-size: 1rem; padding: 0.25rem; border-radius: 5px; transition: color 0.15s, background 0.15s; }
+        .btn-icon-refresh:hover { color: #e63946; background: #f8f0f0; }
+
+        .col-content { flex: 1; overflow-y: auto; }
+
+        /* Carte commande prête */
+        .ready-card {
+            padding: 0.9rem 1.25rem; border-bottom: 1px solid #f4f4f4;
+            display: flex; align-items: center; gap: 1rem;
+            transition: background 0.15s;
+        }
+        .ready-card:hover { background: #fafafa; }
+        .ready-card:last-child { border-bottom: none; }
+        .ready-info { flex: 1; }
+        .ready-num { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
+        .ready-meta { font-size: 0.8rem; color: #888; margin-top: 0.15rem; display: flex; gap: 0.75rem; }
+        .ready-type { font-size: 0.75rem; font-weight: 600; }
+        .type-sur-place  { color: #1b7a6d; }
+        .type-a-emporter { color: #d84315; }
+        .btn-livrer {
+            padding: 0.55rem 1rem; background: #2a9d8f; color: #fff; border: none;
+            border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-family: inherit;
+            font-weight: 700; white-space: nowrap; transition: background 0.2s;
+        }
+        .btn-livrer:hover   { background: #21867a; }
+        .btn-livrer:disabled { background: #aaa; cursor: not-allowed; }
+
+        .empty-left { padding: 3rem 2rem; text-align: center; color: #bbb; }
+        .empty-left .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .empty-left p { font-size: 0.9rem; }
+
+        .loading-spinner { text-align: center; padding: 2rem; color: #bbb; }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.08); border-top-color: #e63946; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 0.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === COLONNE DROITE — Saisir une commande === */
+        .col-right { background: #f8f9fb; overflow-y: auto; }
+        .form-section { padding: 1.25rem; }
+        .form-section h2 { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e8e8e8; }
+
+        /* Radio buttons stylisés */
+        .radio-group { display: flex; gap: 0.75rem; margin-bottom: 1.1rem; }
+        .radio-option { flex: 1; }
+        .radio-option input[type="radio"] { display: none; }
+        .radio-option label {
+            display: block; padding: 0.65rem 0.75rem; text-align: center;
+            border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;
+            font-size: 0.88rem; font-weight: 600; color: #888;
+            transition: all 0.15s;
+        }
+        .radio-option input:checked + label {
+            border-color: #e63946; background: rgba(230,57,70,0.06); color: #e63946;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.65rem 0.85rem; border: 2px solid #e8e8e8;
+            border-radius: 6px; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s;
+            background: #fff;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: #e63946; }
+        .form-group .hint { font-size: 0.76rem; color: #aaa; margin-top: 0.25rem; }
+
+        /* Section produits */
+        .section-divider { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin: 1.25rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e8e8e8; }
+
+        .add-produit-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
+        .add-produit-row select { flex: 1; padding: 0.6rem 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.85rem; font-family: inherit; outline: none; }
+        .add-produit-row select:focus { border-color: #e63946; }
+        .add-produit-row input[type="number"] { width: 65px; padding: 0.6rem 0.5rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.88rem; font-family: inherit; outline: none; text-align: center; }
+        .add-produit-row input:focus { border-color: #e63946; }
+        .btn-add-ligne { padding: 0.6rem 0.9rem; background: #e63946; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; white-space: nowrap; transition: background 0.2s; }
+        .btn-add-ligne:hover { background: #c1121f; }
+
+        /* Lignes panier */
+        .panier-list { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; background: #fff; margin-bottom: 1rem; }
+        .panier-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-bottom: 1px solid #f4f4f4; font-size: 0.88rem; }
+        .panier-item:last-child { border-bottom: none; }
+        .panier-nom { flex: 1; font-weight: 500; }
+        .panier-qty { color: #888; font-size: 0.82rem; }
+        .panier-prix { font-weight: 700; color: #1a1a2e; min-width: 55px; text-align: right; }
+        .btn-remove-ligne { background: none; border: none; cursor: pointer; color: #e63946; font-size: 1rem; padding: 0.15rem; border-radius: 4px; transition: background 0.15s; }
+        .btn-remove-ligne:hover { background: rgba(230,57,70,0.08); }
+        .panier-empty { padding: 1rem; text-align: center; color: #bbb; font-size: 0.85rem; font-style: italic; }
+
+        /* Total */
+        .total-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.85rem 1rem; background: #1a1a2e; border-radius: 8px;
+            color: #fff; margin-bottom: 1.25rem;
+        }
+        .total-bar .total-label { font-size: 0.88rem; color: rgba(255,255,255,0.65); }
+        .total-bar .total-amount { font-size: 1.4rem; font-weight: 900; color: #fff; }
+
+        /* Bouton valider */
+        .btn-valider {
+            width: 100%; padding: 1rem; background: #e63946; color: #fff; border: none;
+            border-radius: 8px; font-size: 1.05rem; font-weight: 800; cursor: pointer;
+            font-family: inherit; transition: background 0.2s, transform 0.1s;
+            letter-spacing: 0.5px;
+        }
+        .btn-valider:hover   { background: #c1121f; }
+        .btn-valider:active  { transform: scale(0.98); }
+        .btn-valider:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Modal confirmation commande passée */
+        .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .confirm-overlay.open { display: flex; }
+        .confirm-modal { background: #fff; border-radius: 16px; padding: 2.5rem 2rem; text-align: center; max-width: 400px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.25); }
+        .confirm-modal .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .confirm-modal h3 { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem; }
+        .confirm-modal .order-details { background: #f8f9fb; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        .confirm-modal .order-num { font-size: 2rem; font-weight: 900; color: #e63946; }
+        .confirm-modal .order-chevalet { font-size: 1rem; color: #555; margin-top: 0.25rem; }
+        .btn-close-confirm { margin-top: 1.25rem; padding: 0.75rem 2rem; background: #2a9d8f; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+        .btn-close-confirm:hover { background: #21867a; }
+
+        /* === TOAST === */
+        .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { padding: 0.8rem 1.2rem; border-radius: 8px; color: #fff; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); min-width: 240px; animation: slideIn 0.3s ease; }
+        .toast-success { background: #2a9d8f; } .toast-error { background: #e63946; }
+        @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-brand">
+            <h1>🍔 WCDO</h1>
+            <span class="subtitle">Accueil / Comptoir</span>
+        </div>
+        <div class="header-right">
+            <span>👤 <strong id="user-nom">…</strong></span>
+            <button class="btn-logout-header" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+    </header>
+
+    <!-- ===== DEUX COLONNES ===== -->
+    <div class="page-body">
+
+        <!-- === COLONNE GAUCHE : Commandes prêtes === -->
+        <div class="col-left">
+            <div class="col-header">
+                <h2>✅ Commandes à remettre</h2>
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <span class="count-badge" id="ready-count">0</span>
+                    <button class="btn-icon-refresh" onclick="loadReadyOrders()" title="Rafraîchir">🔄</button>
+                </div>
+            </div>
+            <div class="col-content" id="ready-list">
+                <div class="loading-spinner"><span class="spinner"></span> Chargement…</div>
+            </div>
+        </div>
+
+        <!-- === COLONNE DROITE : Saisir une commande === -->
+        <div class="col-right">
+            <div class="form-section">
+                <h2>🖊️ Saisir une commande comptoir</h2>
+
+                <!-- Type de commande -->
+                <div class="form-group">
+                    <label>Type de commande</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="type_commande" id="type-sur-place" value="sur_place" checked>
+                            <label for="type-sur-place">🪑 Sur place</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="type_commande" id="type-emporter" value="a_emporter">
+                            <label for="type-emporter">🥡 À emporter</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode de paiement -->
+                <div class="form-group">
+                    <label>Mode de paiement</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="mode_paiement" id="paiement-carte" value="carte" checked>
+                            <label for="paiement-carte">💳 Carte</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="mode_paiement" id="paiement-especes" value="especes">
+                            <label for="paiement-especes">💶 Espèces</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Heure de livraison (optionnelle) -->
+                <div class="form-group">
+                    <label for="heure-livraison">Heure de livraison souhaitée <span style="color:#aaa;font-weight:400;">(optionnel)</span></label>
+                    <input type="time" id="heure-livraison">
+                    <div class="hint">Laisser vide pour une remise immédiate.</div>
+                </div>
+
+                <!-- Section produits -->
+                <div class="section-divider">🧾 Produits</div>
+
+                <!-- Dropdown + quantité + bouton ajout -->
+                <div class="add-produit-row">
+                    <select id="produit-select">
+                        <option value="">— Choisir un produit —</option>
+                    </select>
+                    <input type="number" id="produit-qty" value="1" min="1" max="99" title="Quantité">
+                    <button type="button" class="btn-add-ligne" onclick="addLigne()">➕</button>
+                </div>
+
+                <!-- Liste des lignes du panier -->
+                <div class="panier-list" id="panier-list">
+                    <div class="panier-empty">Aucun produit ajouté</div>
+                </div>
+
+                <!-- Total -->
+                <div class="total-bar">
+                    <span class="total-label">Total commande</span>
+                    <span class="total-amount" id="total-display">0,00 €</span>
+                </div>
+
+                <!-- Bouton valider -->
+                <button class="btn-valider" id="btn-valider" onclick="validerCommande()">
+                    🛒 Valider la commande
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CONFIRMATION ===== -->
+    <div class="confirm-overlay" id="confirm-overlay">
+        <div class="confirm-modal">
+            <div class="success-icon">🎉</div>
+            <h3>Commande enregistrée !</h3>
+            <p style="color:#888;font-size:0.9rem;">La commande a bien été transmise en cuisine.</p>
+            <div class="order-details">
+                <div class="order-num" id="confirm-num">—</div>
+                <div class="order-chevalet" id="confirm-chevalet">—</div>
+            </div>
+            <button class="btn-close-confirm" onclick="closeConfirm()">✓ Nouvelle commande</button>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        /* ==========================================
+           ÉTAT GLOBAL
+        ========================================== */
+        let lignesPanier = [];    // [{id_produit, nom, prix, quantite}]
+        let allProduits  = [];    // cache des produits
+        let refreshTimer = null;
+
+        /* ==========================================
+           UTILS
+        ========================================== */
+        async function checkAuth(roles = []) {
+            const role = sessionStorage.getItem('admin_role');
+            const nom  = sessionStorage.getItem('admin_nom');
+            if (!role) { window.location.href = 'login.html'; return null; }
+            if (roles.length && !roles.includes(role)) { window.location.href = 'index.html'; return null; }
+            return { role, nom };
+        }
+        async function logout() {
+            try { await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }); } catch (e) {}
+            sessionStorage.clear(); window.location.href = 'login.html';
+        }
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`; t.textContent = msg; c.appendChild(t);
+            setTimeout(() => { t.style.transition = 'opacity 0.3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
+        async function apiFetch(url, options = {}) {
+            const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
+            if (res.status === 401) { window.location.href = 'login.html'; return null; }
+            return res;
+        }
+
+        /* ==========================================
+           INIT
+        ========================================== */
+        (async function init() {
+            const user = await checkAuth(['accueil', 'administration']);
+            if (!user) return;
+            document.getElementById('user-nom').textContent = user.nom;
+            await Promise.all([loadReadyOrders(), loadProduits()]);
+            // Auto-refresh des commandes prêtes toutes les 20s
+            refreshTimer = setInterval(loadReadyOrders, 20000);
+        })();
+
+        /* ==========================================
+           COLONNE GAUCHE — Commandes prêtes à remettre
+        ========================================== */
+        async function loadReadyOrders() {
+            try {
+                const res = await apiFetch('/api/admin/commandes');
+                if (!res) return;
+                const result = await res.json();
+                if (!result.success) return;
+
+                // Filtrer les commandes avec statut "preparee"
+                const pretes = (result.data || []).filter(c => c.statut === 'preparee');
+                document.getElementById('ready-count').textContent = pretes.length;
+                renderReadyList(pretes);
+            } catch (err) { console.error(err); }
+        }
+
+        function renderReadyList(commandes) {
+            const container = document.getElementById('ready-list');
+            if (!commandes.length) {
+                container.innerHTML = `
+                    <div class="empty-left">
+                        <div class="icon">😊</div>
+                        <p>Aucune commande en attente de remise.</p>
+                    </div>`;
+                return;
+            }
+            // Trier par date (plus ancienne en premier)
+            const sorted = [...commandes].sort((a, b) =>
+                new Date(a.date_creation || 0) - new Date(b.date_creation || 0)
+            );
+            container.innerHTML = sorted.map(c => {
+                const typeClass = c.type_commande === 'sur_place' ? 'type-sur-place' : 'type-a-emporter';
+                const typeLabel = c.type_commande === 'sur_place' ? '🪑 Sur place' : '🥡 À emporter';
+                const heure = c.date_creation
+                    ? new Date(c.date_creation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                    : '—';
+                return `
+                    <div class="ready-card" id="ready-${c.id}">
+                        <div class="ready-info">
+                            <div class="ready-num">#${c.numero_commande || c.id}</div>
+                            <div class="ready-meta">
+                                <span>🏷️ Chevalet ${c.numero_chevalet || '—'}</span>
+                                <span class="ready-type ${typeClass}">${typeLabel}</span>
+                                <span>⏱ ${heure}</span>
+                            </div>
+                        </div>
+                        <button class="btn-livrer" onclick="livrerCommande(${c.id}, this)" title="Remettre au client">
+                            ✓ Remettre
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        async function livrerCommande(id, btn) {
+            btn.disabled = true; btn.textContent = '⏳…';
+            try {
+                const res = await apiFetch(`/api/admin/commandes/${id}/livrer`, { method: 'PUT' });
+                if (!res) { btn.disabled = false; btn.textContent = '✓ Remettre'; return; }
+                const result = await res.json();
+                if (result.success) {
+                    showToast('✅ Commande remise au client !');
+                    // Retirer la ligne avec animation
+                    const row = document.getElementById(`ready-${id}`);
+                    if (row) { row.style.transition = 'opacity 0.3s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
+                    const count = document.getElementById('ready-count');
+                    count.textContent = Math.max(0, parseInt(count.textContent || 0) - 1);
+                } else {
+                    showToast(result.error || 'Erreur.', 'error');
+                    btn.disabled = false; btn.textContent = '✓ Remettre';
+                }
+            } catch (err) { console.error(err); showToast('Erreur réseau', 'error'); btn.disabled = false; btn.textContent = '✓ Remettre'; }
+        }
+
+        /* ==========================================
+           COLONNE DROITE — Saisie de commande
+        ========================================== */
+        async function loadProduits() {
+            try {
+                const res = await apiFetch('/api/produits');
+                if (!res) return;
+                const result = await res.json();
+                if (!result.success) return;
+                allProduits = result.data || [];
+                const select = document.getElementById('produit-select');
+                select.innerHTML = '<option value="">— Choisir un produit —</option>' +
+                    allProduits
+                        .filter(p => p.disponible)
+                        .map(p => `<option value="${p.id}" data-prix="${p.prix}">${p.nom} — ${parseFloat(p.prix||0).toFixed(2)} €</option>`)
+                        .join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // Ajouter une ligne au panier
+        function addLigne() {
+            const select = document.getElementById('produit-select');
+            const qty    = parseInt(document.getElementById('produit-qty').value) || 1;
+            const id     = parseInt(select.value);
+            if (!id) { showToast('Sélectionnez un produit.', 'error'); return; }
+
+            const produit = allProduits.find(p => p.id == id);
+            if (!produit) return;
+
+            // Si déjà dans le panier → augmenter la quantité
+            const existing = lignesPanier.find(l => l.id_produit == id);
+            if (existing) { existing.quantite += qty; }
+            else {
+                lignesPanier.push({ id_produit: id, nom: produit.nom, prix: parseFloat(produit.prix || 0), quantite: qty });
+            }
+
+            select.value = '';
+            document.getElementById('produit-qty').value = 1;
+            renderPanier();
+        }
+
+        // Supprimer une ligne
+        function removeLigne(idx) {
+            lignesPanier.splice(idx, 1);
+            renderPanier();
+        }
+
+        // Rendre le panier
+        function renderPanier() {
+            const container = document.getElementById('panier-list');
+            const total     = lignesPanier.reduce((s, l) => s + l.prix * l.quantite, 0);
+
+            if (!lignesPanier.length) {
+                container.innerHTML = '<div class="panier-empty">Aucun produit ajouté</div>';
+                document.getElementById('total-display').textContent = '0,00 €';
+                return;
+            }
+
+            container.innerHTML = lignesPanier.map((l, idx) => `
+                <div class="panier-item">
+                    <span class="panier-nom">${l.nom}</span>
+                    <span class="panier-qty">× ${l.quantite}</span>
+                    <span class="panier-prix">${(l.prix * l.quantite).toFixed(2)} €</span>
+                    <button class="btn-remove-ligne" onclick="removeLigne(${idx})" title="Retirer">✕</button>
+                </div>`).join('');
+
+            document.getElementById('total-display').textContent = total.toFixed(2).replace('.', ',') + ' €';
+        }
+
+        // Valider la commande
+        async function validerCommande() {
+            if (!lignesPanier.length) { showToast('Ajoutez au moins un produit.', 'error'); return; }
+
+            const type     = document.querySelector('input[name="type_commande"]:checked').value;
+            const paiement = document.querySelector('input[name="mode_paiement"]:checked').value;
+            const heure    = document.getElementById('heure-livraison').value || null;
+
+            const body = {
+                type_commande:   type,
+                mode_paiement:   paiement,
+                heure_livraison: heure,
+                lignes: lignesPanier.map(l => ({ id_produit: l.id_produit, quantite: l.quantite }))
+            };
+
+            const btn = document.getElementById('btn-valider');
+            btn.disabled = true; btn.textContent = '⏳ Envoi en cours…';
+
+            try {
+                const res = await apiFetch('/api/admin/commandes', { method: 'POST', body: JSON.stringify(body) });
+                if (!res) { btn.disabled = false; btn.textContent = '🛒 Valider la commande'; return; }
+
+                const result = await res.json();
+                if (result.success) {
+                    const data = result.data || {};
+                    // Afficher la modal de confirmation
+                    document.getElementById('confirm-num').textContent = `Commande #${data.numero_commande || '—'}`;
+                    document.getElementById('confirm-chevalet').textContent = `Chevalet n° ${data.numero_chevalet || '—'}`;
+                    document.getElementById('confirm-overlay').classList.add('open');
+                    // Rafraîchir la liste des commandes prêtes
+                    await loadReadyOrders();
+                } else {
+                    showToast(result.error || 'Erreur lors de la commande.', 'error');
+                }
+            } catch (err) {
+                console.error(err); showToast('Erreur réseau', 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = '🛒 Valider la commande';
+            }
+        }
+
+        // Fermer la modal et réinitialiser le formulaire
+        function closeConfirm() {
+            document.getElementById('confirm-overlay').classList.remove('open');
+            lignesPanier = [];
+            renderPanier();
+            document.getElementById('heure-livraison').value = '';
+            document.getElementById('produit-select').value  = '';
+            document.getElementById('produit-qty').value     = 1;
+            // Remettre le type sur "sur_place"
+            document.getElementById('type-sur-place').checked   = true;
+            document.getElementById('paiement-carte').checked   = true;
+        }
+    </script>
+</body>
+</html>

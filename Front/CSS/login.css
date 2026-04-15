@@ -1,0 +1,205 @@
+/* ============================================================
+LOGIN PAGE - WCDO DESIGN SYSTEM
+============================================================ */
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+    background: #fff;
+}
+
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('../images/images/mc_landing_banner.png') no-repeat center center / cover;
+    z-index: 0;
+}
+
+.login-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.08);
+    padding: 48px 42px;
+    min-width: 370px;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-card h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 0 30px 0;
+    text-align: center;
+    color: #333;
+}
+
+/* FORM GROUPS */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Arial', sans-serif;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #FFC72C;
+    box-shadow: 0 0 0 2px rgba(255, 199, 44, 0.1);
+}
+
+.form-group input::placeholder {
+    color: #999;
+}
+
+/* ERROR MESSAGE */
+.error-message {
+    display: none;
+    padding: 12px 14px;
+    background-color: #FFE5E5;
+    border-left: 3px solid #FF4444;
+    border-radius: 4px;
+    color: #CC0000;
+    font-size: 13px;
+    animation: slideIn 0.2s ease-out;
+}
+
+.error-message.show {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* BUTTONS */
+.btn-login,
+.btn-guest {
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Arial', sans-serif;
+}
+
+.btn-login {
+    background: #FFC72C;
+    color: #333;
+    margin-top: 12px;
+}
+
+.btn-login:hover {
+    background: #FFB800;
+    transform: translateY(-1px);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-guest {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.btn-guest:hover {
+    background: #ebebeb;
+}
+
+.btn-guest:active {
+    transform: scale(0.99);
+}
+
+/* DIVIDER */
+.login-divider {
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    margin: 20px 0;
+}
+
+/* INFO TEXT */
+.login-info {
+    font-size: 13px;
+    color: #666;
+    text-align: center;
+    margin-top: 18px;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 32px 20px;
+        min-width: auto;
+    }
+
+    .login-card h1 {
+        font-size: 1.6rem;
+    }
+
+    .form-group input,
+    .btn-login,
+    .btn-guest {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .login-container {
+        max-width: 100%;
+    }
+}

@@ -10,7 +10,7 @@ use WCDO\Controllers\PanierController;
 use WCDO\Controllers\CommandeController;
 use WCDO\Controllers\AdminController;
 
-// Le navigateur envoie d'abord une requête OPTIONS avant tout POST/PUT/DELETE cross-origin
+// vérification CORS requete, demande d'autorisation d'accès pour les requete autre que le front
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -64,9 +64,32 @@ $router->put('/api/admin/produits/(?P<id>[^/]+)',       [$admin, 'updateProduit'
 $router->delete('/api/admin/produits/(?P<id>[^/]+)',    [$admin, 'deleteProduit']);
 $router->get('/api/admin/commandes',                    [$admin, 'getCommandes']);
 
+// --- Menus (public : borne client) ---
+$router->get('/api/menus',                                      [$admin, 'getMenusPublic']);
+
+// --- Admin : Menus ---
+$router->get('/api/admin/menus',                                [$admin, 'getMenus']);
+$router->post('/api/admin/menus',                               [$admin, 'createMenu']);
+$router->put('/api/admin/menus/(?P<id>[^/]+)',                  [$admin, 'updateMenu']);
+$router->delete('/api/admin/menus/(?P<id>[^/]+)',               [$admin, 'deleteMenu']);
+
+// --- Admin : Utilisateurs internes ---
+$router->get('/api/admin/utilisateurs',                         [$admin, 'getUtilisateurs']);
+$router->post('/api/admin/utilisateurs',                        [$admin, 'createUtilisateur']);
+$router->put('/api/admin/utilisateurs/(?P<id>[^/]+)',           [$admin, 'updateUtilisateur']);
+$router->delete('/api/admin/utilisateurs/(?P<id>[^/]+)',        [$admin, 'deleteUtilisateur']);
+
+// --- Admin : Workflow commandes ---
+// IMPORTANT : '/preparation' AVANT '/{id}/preparer' sinon le router matcherait "preparation" comme un ID
+$router->get('/api/admin/commandes/preparation',                [$admin, 'getCommandesPreparation']);
+$router->put('/api/admin/commandes/(?P<id>[^/]+)/preparer',     [$admin, 'marquerPreparee']);
+$router->put('/api/admin/commandes/(?P<id>[^/]+)/livrer',       [$admin, 'marquerLivree']);
+$router->post('/api/admin/commandes',                           [$admin, 'saisirCommande']);
+
 // Handler global : toute exception non rattrapée remonte ici
 try {
     $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 } catch (\Throwable $e) {
     Response::error($e->getMessage(), 500);
 }
+

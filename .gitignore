@@ -1,0 +1,19 @@
+# ── Variables d'environnement (contiennent des secrets) ──────
+dossier_pr_docker_etc/.env
+dossier_pr_docker_etc/.env.dev
+dossier_pr_docker_etc/.env.prod
+
+# ── Dépendances Composer ──────────────────────────────────────
+Backend/vendor/
+Backend/composer.lock
+
+# ── Données Docker persistantes ──────────────────────────────
+dossier_pr_docker_etc/data/
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+
+# ── IDE ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.DS_Store

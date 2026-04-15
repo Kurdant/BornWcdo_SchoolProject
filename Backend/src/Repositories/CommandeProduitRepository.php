@@ -12,7 +12,7 @@ class CommandeProduitRepository
 
     public function __construct()
     {
-        $this->pdo = Database::getInstance()->getConnection();
+        $this->pdo = Database::getInstance();
     }
 
     /**
@@ -42,10 +42,10 @@ class CommandeProduitRepository
         // Exécute avec les données de la ligne
         $stmt->execute([
             'id_commande' => $commandeId,
-            'id_produit' => $ligne->idProduit(),
-            'quantite' => $ligne->quantite(),
-            'prix_unitaire' => $ligne->prixUnitaire(),
-            'details' => json_encode($ligne->details())  // JSON flexible : sauces, taille, etc.
+            'id_produit' => $ligne->getIdProduit(),
+            'quantite' => $ligne->getQuantite(),
+            'prix_unitaire' => $ligne->getPrixUnitaire(),
+            'details' => json_encode($ligne->getDetails())  // JSON flexible : sauces, taille, etc.
         ]);
         
         // Cette méthode ne retourne rien (void) : elle fait juste l'insertion

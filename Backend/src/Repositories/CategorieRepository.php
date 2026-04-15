@@ -17,14 +17,15 @@ class CategorieRepository
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->prepare('SELECT id, nom FROM CATEGORIE ORDER BY nom ASC');
+        $stmt = $this->pdo->prepare('SELECT id, nom, image FROM CATEGORIE ORDER BY nom ASC');
         $stmt->execute();
         
         $categories = [];
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $categories[] = new Categorie(
                 id: $row['id'],
-                nom: $row['nom']
+                nom: $row['nom'],
+                image: $row['image']
             );
         }
         
@@ -33,7 +34,7 @@ class CategorieRepository
 
     public function findById(int $id): ?Categorie
     {
-        $stmt = $this->pdo->prepare('SELECT id, nom FROM CATEGORIE WHERE id = :id');
+        $stmt = $this->pdo->prepare('SELECT id, nom, image FROM CATEGORIE WHERE id = :id');
         $stmt->execute(['id' => $id]);
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -44,7 +45,8 @@ class CategorieRepository
         
         return new Categorie(
             id: $row['id'],
-            nom: $row['nom']
+            nom: $row['nom'],
+            image: $row['image']
         );
     }
 

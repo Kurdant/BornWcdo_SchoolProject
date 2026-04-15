@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - WCDO</title>
+    <link rel="stylesheet" href="CSS/login.css">
+</head>
+<body>
+    <div class="background-image"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Connexion</h1>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Entrez votre email"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Entrez votre mot de passe"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div id="errorMessage" class="error-message"></div>
+
+                <button type="submit" class="btn-login">Se connecter</button>
+            </form>
+
+            <div class="login-divider">ou</div>
+
+            <button id="guestButton" class="btn-guest" type="button">Continuer en tant qu'invité</button>
+
+            <p class="login-info">Vous n'avez pas de compte ? Vous pouvez commander sans vous connecter.</p>
+        </div>
+    </div>
+
+    <script src="JS/login.js"></script>
+</body>
+</html>

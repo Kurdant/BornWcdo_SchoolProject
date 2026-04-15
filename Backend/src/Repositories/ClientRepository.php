@@ -69,7 +69,7 @@ class ClientRepository
             prenom: $prenom,
             nom: $nom,
             email: $email,
-            motDePasseHash: $motDePasseHash,
+            motDePasse: $motDePasseHash,
             pointsFidelite: 0,
             dateCreation: date('Y-m-d H:i:s')
         );
@@ -94,7 +94,7 @@ class ClientRepository
             prenom: $row['prenom'],
             nom: $row['nom'],
             email: $row['email'],
-            motDePasseHash: $row['mot_de_passe'],
+            motDePasse: $row['mot_de_passe'],
             pointsFidelite: (int)$row['points_fidelite'],
             dateCreation: $row['date_creation']
         );

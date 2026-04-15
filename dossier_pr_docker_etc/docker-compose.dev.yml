@@ -1,0 +1,96 @@
+# ============================================================
+# docker-compose.dev.yml — Stack locale (sans Traefik)
+#
+# Usage :
+#   docker compose -f dossier_pr_docker_etc/docker-compose.dev.yml up -d --build
+#
+# Accès :
+#   Frontend   → http://localhost:8080
+#   API Backend→ http://localhost:8081/api/health
+#   phpMyAdmin → http://localhost:8082  (user: wcdo_user / wcdo_pass)
+# ============================================================
+
+services:
+
+  # ── Base de données MariaDB ────────────────────────────────
+  db:
+    image: mariadb:10.11
+    container_name: wcdo-db
+    restart: unless-stopped
+    env_file: .env.dev
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wcdo-dev
+
+  # ── Backend PHP-FPM ────────────────────────────────────────
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wcdo:dev
+    container_name: wcdo-php
+    restart: unless-stopped
+    volumes:
+      - ..:/app
+    working_dir: /app/Backend
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.dev
+    networks:
+      - wcdo-dev
+
+  # ── Nginx (front statique + reverse proxy API) ─────────────
+  nginx:
+    image: nginx:alpine
+    container_name: wcdo-nginx
+    restart: unless-stopped
+    volumes:
+      - ..:/app
+      - ./docker/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:80"   # Frontend  → http://localhost:8080
+      - "8081:81"   # API       → http://localhost:8081
+    depends_on:
+      - php
+    networks:
+      - wcdo-dev
+
+  # ── phpMyAdmin ─────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: wcdo-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER:-wcdo_user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-wcdo_pass}
+    ports:
+      - "8082:80"   # phpMyAdmin → http://localhost:8082
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.dev
+    networks:
+      - wcdo-dev
+
+  # GitHub Actions Runner intentionnellement absent en dev local
+
+volumes:
+  db_data:
+
+networks:
+  wcdo-dev:
+    driver: bridge

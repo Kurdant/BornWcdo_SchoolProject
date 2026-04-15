@@ -95,7 +95,7 @@ class ProduitRepository
             description: $description,
             prix: $prix,
             stock: $stock,
-            categorieId: $categorieId,
+            idCategorie: $categorieId,
             image: $image,
             dateCreation: date('Y-m-d H:i:s')
         );
@@ -106,11 +106,55 @@ class ProduitRepository
         $stmt = $this->pdo->prepare(
             'UPDATE PRODUIT SET stock = stock - :quantite WHERE id = :id'
         );
-        
+
         return $stmt->execute([
             'quantite' => $quantite,
-            'id' => $id
+            'id'       => $id,
         ]);
+    }
+
+    /**
+     * Met à jour toutes les informations d'un produit.
+     * L'image peut être null pour conserver l'image existante côté métier
+     * (la décision est laissée au Service/Controller).
+     */
+    public function update(
+        int $id,
+        string $nom,
+        string $description,
+        float $prix,
+        int $stock,
+        int $categorieId,
+        ?string $image
+    ): bool {
+        $stmt = $this->pdo->prepare(
+            'UPDATE PRODUIT
+             SET nom = :nom, description = :description, prix = :prix,
+                 stock = :stock, id_categorie = :categorie_id, image = :image
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'nom'         => $nom,
+            'description' => $description,
+            'prix'        => $prix,
+            'stock'       => $stock,
+            'categorie_id' => $categorieId,
+            'image'       => $image,
+            'id'          => $id,
+        ]);
+    }
+
+    /**
+     * Supprime un produit par son ID.
+     * Attention : les lignes PANIER_PRODUIT et COMMANDE_PRODUIT référençant ce produit
+     * doivent utiliser ON DELETE RESTRICT (FK) pour éviter toute suppression silencieuse.
+     */
+    public function delete(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM PRODUIT WHERE id = :id');
+
+        return $stmt->execute(['id' => $id]);
     }
 
     private function hydrateProduit(array $row): Produit
@@ -121,7 +165,7 @@ class ProduitRepository
             description: $row['description'],
             prix: (float)$row['prix'],
             stock: (int)$row['stock'],
-            categorieId: (int)$row['id_categorie'],
+            idCategorie: (int)$row['id_categorie'],
             image: $row['image'],
             dateCreation: $row['date_creation']
         );

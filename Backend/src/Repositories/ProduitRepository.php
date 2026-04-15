@@ -2,6 +2,8 @@
 
 namespace WCDO\Repositories;
 
+use PDO;
+
 use WCDO\Entities\Produit;
 
 use WCDO\Repositories\BaseRepository;

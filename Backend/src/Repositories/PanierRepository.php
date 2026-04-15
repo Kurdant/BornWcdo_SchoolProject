@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace WCDO\Repositories;
 
+use PDO;
+
 use WCDO\Entities\Panier;
 
 use WCDO\Repositories\BaseRepository;

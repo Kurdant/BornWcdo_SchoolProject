@@ -236,7 +236,7 @@
         const nom  = sessionStorage.getItem('admin_nom');
         if (!role) { window.location.href = 'login.html'; return null; }
         if (rolesAutorises.length && !rolesAutorises.includes(role)) {
-            window.location.href = 'index.html'; return null;
+            window.location.href = 'login.html'; return null;
         }
         return { role, nom };
     }

@@ -206,7 +206,7 @@
             const role = sessionStorage.getItem('admin_role');
             const nom  = sessionStorage.getItem('admin_nom');
             if (!role) { window.location.href = 'login.html'; return null; }
-            if (roles.length && !roles.includes(role)) { window.location.href = 'index.html'; return null; }
+            if (roles.length && !roles.includes(role)) { window.location.href = 'login.html'; return null; }
             return { role, nom };
         }
         async function logout() {

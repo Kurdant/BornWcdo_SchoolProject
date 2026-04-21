@@ -2,7 +2,9 @@
 MODAL OPEN/CLOSE
 ============================================================ */
 
-const API_BASE = 'https://wakdo-back.acadenice.fr/api';
+const API_BASE = window.location.hostname === 'localhost'
+    ? '/api'
+    : 'https://wakdo-back.acadenice.fr/api';
 
 // Convertit les chemins d'images renvoyés par l'API (/Front/images/...)
 // en chemins valides pour le front servi depuis wakdo-front.acadenice.fr
@@ -53,8 +55,22 @@ function closeModal() {
 modalClose.addEventListener('click', closeModal);
 
 /* ============================================================
-LOAD API + INITIAL CREATION OF CATEGORIES AND FOOD ITEMS
+AFFICHAGE INFOS CLIENT (si connecté)
 ============================================================ */
+
+const nomEl    = document.getElementById('clientNom');
+const pointsEl = document.getElementById('clientPoints');
+const infoBox  = document.getElementById('clientInfo');
+const clientNomStored    = sessionStorage.getItem('client_name');
+const clientPointsStored = sessionStorage.getItem('client_points');
+
+if (clientNomStored) {
+    nomEl.textContent    = clientNomStored;
+    pointsEl.textContent = clientPointsStored || '0';
+    infoBox.style.display = 'flex';
+}
+
+
 
 Promise.all([
   fetch(`${API_BASE}/categories`, { credentials: 'include' }).then(r => r.json()),
@@ -147,7 +163,11 @@ function createFoodItems() {
       <span>${parseFloat(produit.prix).toFixed(2)}€</span>
     `;
 
-    div.addEventListener('click', () => {
+    const epuise = produit.stock <= 0 || produit.disponible === false;
+    if (epuise) {
+      div.classList.add('out-of-stock');
+    } else {
+      div.addEventListener('click', () => {
       const nom  = produit.nom;
       const prix = parseFloat(produit.prix);
 
@@ -192,7 +212,8 @@ function createFoodItems() {
       ajouterPanierAPI(produit.id, 1, null, (ligneId) => {
         AjoutProduitSimple(nom, prix, ligneId);
       });
-      });
+      }); // fin addEventListener click
+    } // fin else (produit dispo)
 
     foodContainer.appendChild(div);
   });
@@ -321,6 +342,29 @@ function addBoissonMenu() {
             });
         })
         .catch(error => console.error(error));
+}
+
+function addSaucesMenu() {
+  const container = document.getElementById('saucesMenu');
+  if (container.children.length > 0) return;
+  fetch(`${API_BASE}/sauces`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(res => {
+      const sauces = res.data || [];
+      container.innerHTML = '';
+      sauces.forEach(sauce => {
+        const div = document.createElement('div');
+        div.classList.add('modalMenuItem');
+        div.dataset.sauceid = sauce.id;
+        div.innerHTML = `<div class="modalMenuLabel">${sauce.nom}</div>`;
+        div.addEventListener('click', () => {
+          container.querySelectorAll('.modalMenuItem').forEach(el => el.classList.remove('modalMenuItemSelected'));
+          div.classList.add('modalMenuItemSelected');
+        });
+        container.appendChild(div);
+      });
+    })
+    .catch(err => console.error('Erreur chargement sauces:', err));
 }
 
 /* ============================================================
@@ -456,7 +500,8 @@ STEP BUTTON ACTIONS
 const steps = [
   document.querySelector('.first-step'),
   document.querySelector('.second-step'),
-  document.querySelector('.third-step')
+  document.querySelector('.third-step'),
+  document.querySelector('.fourth-step')
 ];
 const nextBtn = document.getElementById('nextStep');
 
@@ -494,7 +539,8 @@ function nextStep() {
       addBoissonMenu();
     }
     if (step === 3) {
-      console.log('letape actuelle ', step)
+      console.log('Chargement des sauces');
+      addSaucesMenu();
     }
     renderStep();
     updateBackDisplay();
@@ -546,11 +592,15 @@ function ajouterPanierAPI(produitId, quantite, details, callback) {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ produit_id: produitId, quantite, details: details || null })
+    body: JSON.stringify({ id_produit: produitId, quantite, details: details || null })
   })
   .then(r => r.json())
   .then(res => {
-    const lignes = res.lignes || [];
+    if (!res.success) {
+      alert(res.error || res.message || 'Produit indisponible.');
+      return;
+    }
+    const lignes = res.data?.lignes || [];
     const matches = lignes.filter(l => l.id_produit === produitId);
     const ligneId = matches.length > 0 ? matches[matches.length - 1].id : null;
     if (callback) callback(ligneId);
@@ -571,26 +621,37 @@ document.querySelector('.panierEndingAbandon').addEventListener('click', () => {
 });
 
 document.querySelector('.panierEndingPay').addEventListener('click', () => {
-  const typeCommande   = sessionStorage.getItem('type_commande') || 'sur_place';
-  const numeroChevalet = parseInt(sessionStorage.getItem('numero_chevalet') || '1', 10);
+  const typeCommande = sessionStorage.getItem('type_commande') || 'sur_place';
+
+  if (typeCommande === 'sur_place') {
+    window.location.href = 'table-number.html';
+    return;
+  }
+
+  // À emporter : commande directe sans chevalet
+  const modePaiement = sessionStorage.getItem('mode_paiement') || 'carte';
+  const clientId     = sessionStorage.getItem('client_id') ? parseInt(sessionStorage.getItem('client_id')) : null;
 
   fetch(`${API_BASE}/commande`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      type_commande:   typeCommande,
-      numero_chevalet: numeroChevalet,
-      mode_paiement:   'carte'
+      type_commande: typeCommande,
+      mode_paiement: modePaiement,
+      client_id:     clientId
     })
   })
   .then(r => r.json())
   .then(res => {
-    if (res.numero_commande) {
-      sessionStorage.setItem('numero_commande', res.numero_commande);
+    console.log('Réponse commande :', res);
+    const commande = res.data?.commande;
+    if (commande?.numero_commande) {
+      sessionStorage.setItem('numero_commande', commande.numero_commande);
+      sessionStorage.setItem('numero_chevalet', commande.numero_chevalet);
       window.location.href = 'remerciement.html';
     } else {
-      alert(res.error || 'Erreur lors de la commande');
+      alert(res.message || res.error || 'Erreur lors de la commande');
     }
   })
   .catch(err => alert('Erreur réseau : ' + err));

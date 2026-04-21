@@ -18,15 +18,17 @@
                 Récupérez un chevalet et indiquez ici le numéro inscrit dessus
             </p>
             <div class="table-number-inputs">
-                <input type="text" maxlength="1" class="table-digit-input" value="2">
-                <input type="text" maxlength="1" class="table-digit-input" value="6">
-                <input type="text" maxlength="1" class="table-digit-input" value="1">
+                <input type="text" maxlength="1" class="table-digit-input">
+                <input type="text" maxlength="1" class="table-digit-input">
+                <input type="text" maxlength="1" class="table-digit-input">
             </div>
             <button class="table-number-submit">Enregistrer le numéro</button>
         </div>
     </div>
     <script>
-        const API_BASE = 'https://wakdo-back.acadenice.fr/api';
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? '/api'
+          : 'https://wakdo-back.acadenice.fr/api';
 
         document.querySelector('.table-number-submit').addEventListener('click', () => {
             const inputs = document.querySelectorAll('.table-digit-input');
@@ -45,7 +47,8 @@
                 body: JSON.stringify({
                     type_commande:   'sur_place',
                     numero_chevalet: chevalet,
-                    mode_paiement:   'carte'
+                    mode_paiement:   'carte',
+                    client_id:       sessionStorage.getItem('client_id') ? parseInt(sessionStorage.getItem('client_id')) : null
                 })
             })
             .then(r => r.json())

@@ -8,7 +8,7 @@
     <script src="JS/menu-selection.js" defer></script>
     <title>Selection Menu</title>
 </head>
-  
+<body>
     <div class="main">
         <div class="selectFoodMenu">
             <div class="selectFood">
@@ -85,6 +85,15 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="fourth-step">
+                                <div class="modalDescription">
+                                    <h2>Choisissez votre sauce</h2>
+                                    <div class="modalSubtitle">
+                                        Jusqu'à 2 sauces pour accompagner votre menu
+                                    </div>
+                                    <div id="saucesMenu" class="modalMenus"></div>
+                                </div>
+                            </div>
                             <div class="modalBoisson">
                                 <div class="modalDescription">
                                     <h2>Choisissez votre boisson</h2>
@@ -141,6 +150,10 @@
         </div>
         <div class="panier">
             <div class="panierLogo"><img src="images/images/logo.png" /></div>
+            <div id="clientInfo" class="clientInfo" style="display:none;">
+                <span class="clientInfoNom">👤 <span id="clientNom"></span></span>
+                <span class="clientInfoPoints">⭐ <span id="clientPoints"></span> pts</span>
+            </div>
             <div class="panierContent">
                 <div class="panierNumbers">
                     <div>

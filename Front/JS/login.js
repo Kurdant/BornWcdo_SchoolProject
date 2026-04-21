@@ -2,7 +2,9 @@
 LOGIN - HANDLE AUTHENTICATION
 ============================================================ */
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = window.location.hostname === 'localhost'
+    ? '/api'
+    : 'https://wakdo-back.acadenice.fr/api';
 
 const loginForm = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');

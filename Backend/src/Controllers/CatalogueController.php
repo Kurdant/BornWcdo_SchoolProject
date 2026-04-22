@@ -47,7 +47,6 @@ class CatalogueController
         $data = array_map(fn($cat) => $cat->toArray(), $categories);
         Response::success($data);
     }
-
     /**
      * GET /api/produits
      * 

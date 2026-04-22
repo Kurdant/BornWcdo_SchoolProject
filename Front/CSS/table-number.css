@@ -4,6 +4,7 @@ body, html {
     padding: 0;
     box-sizing: border-box;
     font-family: 'Arial', sans-serif;
+    overflow-x: hidden;
 }
 
 .background-image {
@@ -24,9 +25,9 @@ body, html {
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 28px rgba(0,0,0,0.08);
-    padding: 32px 42px 38px 42px;
-    min-width: 370px;
-    max-width: 480px;
+    padding: clamp(24px, 5vw, 42px);
+    width: min(480px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
     z-index: 2;
 }
 
@@ -58,14 +59,14 @@ body, html {
 .table-number-inputs {
     display: flex;
     justify-content: center;
-    gap: 48px;
+    gap: clamp(16px, 6vw, 48px);
     margin: 0 0 38px 0;
 }
 
 .table-digit-input {
-    width: 46px;
+    width: clamp(42px, 12vw, 46px);
     height: 65px;
-    font-size: 2.6rem;
+    font-size: clamp(2rem, 8vw, 2.6rem);
     font-weight: bold;
     text-align: center;
     border: none;
@@ -97,4 +98,31 @@ body, html {
 }
 .table-number-submit:hover {
     background: #e6be00;
+}
+
+@media (max-width: 520px) {
+    .table-number-box {
+        padding-top: 56px;
+    }
+
+    .table-number-img img {
+        width: 96px;
+        margin-top: -64px;
+    }
+
+    .table-number-content h1 {
+        font-size: 1.6rem;
+        text-align: center;
+    }
+
+    .table-number-help {
+        font-size: 1rem;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .table-number-submit {
+        width: 100%;
+        padding-inline: 20px;
+    }
 }

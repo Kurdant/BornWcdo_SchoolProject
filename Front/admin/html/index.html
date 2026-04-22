@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO Admin — Dashboard</title>
+    <link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<div class="layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🍔 WCDO Admin</div>
+            <div class="user-block">
+                <span class="user-nom" id="user-nom">…</span>
+                <span class="user-role-badge" id="user-role"></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html"        class="nav-item active">📊 Dashboard</a>
+            <a href="produits.html"     class="nav-item">📦 Produits</a>
+            <a href="menus.html"        class="nav-item">🍔 Menus</a>
+            <a href="utilisateurs.html" class="nav-item">👥 Utilisateurs</a>
+            <a href="preparation.html"  class="nav-item">🍳 Préparation</a>
+            <a href="accueil-bo.html"   class="nav-item">🛎️ Accueil comptoir</a>
+        </nav>
+        <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>📊 Dashboard</h1>
+            <p class="subtitle" id="date-display"></p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon red">📋</div>
+                <div class="stat-info">
+                    <div class="stat-label">Commandes du jour</div>
+                    <div class="stat-value" id="stat-total">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">⏳</div>
+                <div class="stat-info">
+                    <div class="stat-label">En attente</div>
+                    <div class="stat-value" id="stat-attente">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">Préparées</div>
+                    <div class="stat-value" id="stat-preparees">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">💶</div>
+                <div class="stat-info">
+                    <div class="stat-label">CA du jour</div>
+                    <div class="stat-value" id="stat-ca">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DERNIÈRES COMMANDES -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Dernières commandes</h2>
+                <button class="btn-icon-refresh" onclick="loadCommandes()" title="Rafraîchir">🔄</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#Commande</th>
+                        <th>Chevalet</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Heure</th>
+                    </tr>
+                </thead>
+                <tbody id="commandes-tbody">
+                    <tr class="loading-row">
+                        <td colspan="6"><span class="spinner"></span> Chargement…</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div class="toast-container"></div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

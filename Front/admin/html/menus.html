@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO Admin — Menus</title>
+    <link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<div class="layout">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🍔 WCDO Admin</div>
+            <div class="user-block">
+                <span class="user-nom" id="user-nom">…</span>
+                <span class="user-role-badge" id="user-role"></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html"        class="nav-item">📊 Dashboard</a>
+            <a href="produits.html"     class="nav-item">📦 Produits</a>
+            <a href="menus.html"        class="nav-item active">🍔 Menus</a>
+            <a href="utilisateurs.html" class="nav-item">👥 Utilisateurs</a>
+            <a href="preparation.html"  class="nav-item">🍳 Préparation</a>
+            <a href="accueil-bo.html"   class="nav-item">🛎️ Accueil comptoir</a>
+        </nav>
+        <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>🍔 Menus</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">➕ Ajouter un menu</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Menus composés</h2>
+                <span id="menus-count" style="color:#888;font-size:0.88rem;"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Nom</th>
+                        <th>Prix</th>
+                        <th>Nb produits</th>
+                        <th>Disponible</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="menus-tbody">
+                    <tr class="loading-row"><td colspan="6"><span class="spinner"></span> Chargement…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- ===== MODAL MENU ===== -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal modal-wide">
+        <h3 id="modal-title">Ajouter un menu</h3>
+        <form id="menu-form" novalidate>
+            <input type="hidden" id="menu-id">
+
+            <div class="form-group">
+                <label for="f-nom">Nom du menu *</label>
+                <input type="text" id="f-nom" required placeholder="Ex : Menu Best Of">
+            </div>
+            <div class="form-group">
+                <label for="f-description">Description</label>
+                <textarea id="f-description" placeholder="Description courte…"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="f-prix">Prix (€) *</label>
+                    <input type="number" id="f-prix" min="0" step="0.01" required placeholder="9.90">
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:0.1rem;">
+                    <div class="form-check">
+                        <input type="checkbox" id="f-disponible" checked>
+                        <label for="f-disponible">Menu disponible</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="f-image">URL de l'image</label>
+                <input type="url" id="f-image" placeholder="https://…/menu.jpg">
+            </div>
+
+            <div class="modal-section-title">🧩 Composition du menu</div>
+
+            <div id="composition-list" class="composition-list">
+                <div class="composition-empty">Aucun produit ajouté</div>
+            </div>
+
+            <div class="add-produit-row">
+                <select id="add-produit-select">
+                    <option value="">— Choisir un produit —</option>
+                </select>
+                <input type="number" id="add-produit-qty" value="1" min="1" max="99" title="Quantité">
+                <button type="button" class="btn btn-success btn-sm" onclick="addProduitToComposition()">➕ Ajouter</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                <button type="submit" class="btn btn-success" id="btn-save">💾 Sauvegarder</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast-container"></div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/menus.js"></script>
+</body>
+</html>

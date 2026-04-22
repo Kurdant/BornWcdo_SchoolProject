@@ -6,6 +6,20 @@ const API_BASE = window.location.hostname === 'localhost'
     ? '/api'
     : 'https://wakdo-back.acadenice.fr/api';
 
+
+
+Promise.all([
+  fetch(`${API_BASE}/categories`, { credentials: 'include' }).then(r => r.json()),
+  fetch(`${API_BASE}/produits`,   { credentials: 'include' }).then(r => r.json())
+]).then(([catRes, prodRes]) => {
+  window.apiCategories = catRes.data;
+  window.apiProduits   = prodRes.data;
+  createCategories();
+  createFoodItems();
+  if (apiCategories.length > 0) displayFoodByCategory(apiCategories[0].id);
+}).catch(error => console.error('Erreur API :', error));
+
+
 // Convertit les chemins d'images renvoyés par l'API (/Front/images/...)
 // en chemins valides pour le front servi depuis wakdo-front.acadenice.fr
 function imgUrl(path) {
@@ -54,6 +68,8 @@ function closeModal() {
 }
 modalClose.addEventListener('click', closeModal);
 
+
+
 /* ============================================================
 AFFICHAGE INFOS CLIENT (si connecté)
 ============================================================ */
@@ -72,17 +88,6 @@ if (clientNomStored) {
 
 
 
-Promise.all([
-  fetch(`${API_BASE}/categories`, { credentials: 'include' }).then(r => r.json()),
-  fetch(`${API_BASE}/produits`,   { credentials: 'include' }).then(r => r.json())
-]).then(([catRes, prodRes]) => {
-  window.apiCategories = catRes.data;
-  window.apiProduits   = prodRes.data;
-  createCategories();
-  createFoodItems();
-  if (apiCategories.length > 0) displayFoodByCategory(apiCategories[0].id);
-}).catch(error => console.error('Erreur API :', error));
-
 /* ============================================================
 CATEGORY CREATION + CATEGORY SELECTION
 ============================================================ */
@@ -90,6 +95,7 @@ CATEGORY CREATION + CATEGORY SELECTION
 const categorieList = document.getElementById('categorieList');
 
 function createCategories() {
+  categorieList.innerHTML = '';
   apiCategories.forEach((categorie, idx) => {
     const div = document.createElement('div');
     div.classList.add('categorieItem');
@@ -103,6 +109,10 @@ function createCategories() {
     div.appendChild(label);
     categorieList.appendChild(div);
   });
+
+  currentCategorieIndex = 0;
+  updateCategoryArrowsState();
+  scrollSelectedCategoryIntoView();
 }
 
 function selectCategory(categoryId) {
@@ -111,6 +121,13 @@ function selectCategory(categoryId) {
     cat.classList.remove('categorieItemSelected');
     if (cat.id == categoryId) cat.classList.add('categorieItemSelected');
   });
+
+  const nextIndex = Array.from(categories).findIndex(cat => cat.id == categoryId);
+  if (nextIndex >= 0) {
+    currentCategorieIndex = nextIndex;
+  }
+  scrollSelectedCategoryIntoView();
+  updateCategoryArrowsState();
 }
 
 function displayFoodByCategory(categoryId) {
@@ -298,7 +315,7 @@ rightArrowBoisson.addEventListener('click', () => {
 //     scrollIndex = Math.round(scrollLeft / itemWidth);
 // });
 
-// ✅ RESET CAROUSEL (nouvelle fonction)
+// RESET CAROUSEL (nouvelle fonction)
 function resetCarousel() {
     scrollIndex = 0;
     boissonsContainer.scrollTo({ 
@@ -661,13 +678,39 @@ document.querySelector('.panierEndingPay').addEventListener('click', () => {
 CHANGE CATEGORIES WITH ARROWS
 ============================================================ */
 
-const leftArrow = document.querySelector('.categorieArrowLeft');
-const rightArrow = document.querySelector('.categorieArrowRight');
+const leftArrow = document.querySelector('.categorieSelection .categorieArrowLeft');
+const rightArrow = document.querySelector('.categorieSelection .categorieArrowRight');
 let currentCategorieIndex = 0;
+
+function scrollSelectedCategoryIntoView() {
+  const categories = document.querySelectorAll('.categorieItem');
+  const selectedCategory = categories[currentCategorieIndex];
+
+  if (!selectedCategory) {
+    return;
+  }
+
+  selectedCategory.scrollIntoView({
+    behavior: 'smooth',
+    inline: 'center',
+    block: 'nearest'
+  });
+}
+
+function updateCategoryArrowsState() {
+  const hasOverflow = categorieList.scrollWidth > categorieList.clientWidth + 4;
+
+  leftArrow.classList.toggle('is-disabled', !hasOverflow);
+  rightArrow.classList.toggle('is-disabled', !hasOverflow);
+}
 
 function changeCategoriesArrows(direction) {
   const categories = document.querySelectorAll('.categorieItem');
   const total = categories.length;
+
+  if (!total) {
+    return;
+  }
 
   if (direction === 'next') {
     currentCategorieIndex = (currentCategorieIndex + 1) % total;
@@ -678,7 +721,7 @@ function changeCategoriesArrows(direction) {
   const target = categories[currentCategorieIndex];
   selectCategory(target.id);
   displayFoodByCategory(target.id);
-} 
+}
 
 rightArrow.addEventListener('click', () => {
   changeCategoriesArrows('next');
@@ -690,14 +733,17 @@ leftArrow.addEventListener('click', () => {
 
 categorieList.addEventListener('click', (event) => {
   const categoryItem = event.target.closest('.categorieItem');
-  if (categoryItem) {
-    selectCategory(categoryItem.id);
-    displayFoodByCategory(categoryItem.id);
+  if (!categoryItem) {
+    return;
   }
 
-  const allCategories = document.querySelectorAll('.categorieItem');
-  const index = Array.from(allCategories).indexOf(categoryItem);
-  currentCategorieIndex = index;
+  selectCategory(categoryItem.id);
+  displayFoodByCategory(categoryItem.id);
+});
+
+window.addEventListener('resize', () => {
+  updateCategoryArrowsState();
+  scrollSelectedCategoryIntoView();
 });
 
 /* ============================================================
@@ -733,4 +779,3 @@ moins.addEventListener('click', () => {
   incrementationNombre--;                          
   chiffre.textContent = incrementationNombre;
 });
-

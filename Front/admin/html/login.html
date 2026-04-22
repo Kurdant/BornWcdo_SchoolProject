@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO Admin — Connexion</title>
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <div class="icon">🍔</div>
+            <h1>WCDO</h1>
+            <p>Espace Administration</p>
+        </div>
+
+        <div class="error-msg" id="error-msg">
+            <span>⚠️</span>
+            <span id="error-text"></span>
+        </div>
+
+        <form id="login-form" novalidate>
+            <div class="form-group">
+                <label for="email">Adresse email</label>
+                <input type="email" id="email" placeholder="nom@wcdo.fr" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                    <button type="button" class="toggle-pwd" id="toggle-pwd" title="Afficher/masquer">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btn-submit">Se connecter</button>
+        </form>
+
+        <div class="version-tag">WCDO Back-Office v2.0</div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+</html>

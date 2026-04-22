@@ -4,6 +4,7 @@ body, html {
     padding: 0;
     box-sizing: border-box;
     font-family: 'Arial', sans-serif;
+    overflow-x: hidden;
 }
 
 .background-image {
@@ -19,6 +20,9 @@ body, html {
     position: fixed;
     top: 20px;
     right: 20px;
+    left: 20px;
+    display: flex;
+    justify-content: flex-end;
     z-index: 10;
 }
 
@@ -50,11 +54,11 @@ body, html {
     transform: translate(-50%, -50%);
     background: #fff;
     border-radius: 18px;
-    padding: 32px 48px;
+    padding: clamp(24px, 5vw, 48px);
     box-shadow: 0 4px 28px rgba(0,0,0,0.08);
     z-index: 2;
-    min-width: 370px;
-    max-width: 500px;
+    width: min(500px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
 }
 
 .welcome-message-title h1 {
@@ -71,13 +75,19 @@ body, html {
 
 .welcome-message-choose {
     display: flex;
-    justify-content: space-between;
-    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
     margin-top: 18px;
 }
 
 .welcome-message-choose div {
     text-align: center;
+}
+
+.chooseEat {
+    flex: 1 1 160px;
+    min-width: 0;
 }
 
 .welcome-message-choose img {
@@ -95,4 +105,31 @@ body, html {
 .chooseEatSelected{
     border: #ffdd3e solid 4px;
     border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+    .top-menu {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+    }
+
+    .btn-login-header {
+        width: 100%;
+        max-width: 180px;
+    }
+
+    .welcome-message-title h1 {
+        margin-bottom: 24px;
+        font-size: 1.7rem;
+    }
+
+    .welcome-message-text h2 {
+        margin-bottom: 28px;
+        font-size: 1rem;
+    }
+
+    .welcome-message-choose {
+        gap: 16px;
+    }
 }

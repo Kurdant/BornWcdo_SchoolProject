@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCDO Admin — Utilisateurs</title>
+    <link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<div class="layout">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🍔 WCDO Admin</div>
+            <div class="user-block">
+                <span class="user-nom" id="user-nom">…</span>
+                <span class="user-role-badge" id="user-role"></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html"        class="nav-item">📊 Dashboard</a>
+            <a href="produits.html"     class="nav-item">📦 Produits</a>
+            <a href="menus.html"        class="nav-item">🍔 Menus</a>
+            <a href="utilisateurs.html" class="nav-item active">👥 Utilisateurs</a>
+            <a href="preparation.html"  class="nav-item">🍳 Préparation</a>
+            <a href="accueil-bo.html"   class="nav-item">🛎️ Accueil comptoir</a>
+        </nav>
+        <button class="btn-logout" onclick="logout()">🚪 Déconnexion</button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>👥 Utilisateurs</h1>
+            <button class="btn btn-primary" onclick="openModal('create')">➕ Ajouter un utilisateur</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Comptes internes</h2>
+                <span id="users-count" style="color:#888;font-size:0.88rem;"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody">
+                    <tr class="loading-row"><td colspan="4"><span class="spinner"></span> Chargement…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- ===== MODAL UTILISATEUR ===== -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-title">Ajouter un utilisateur</h3>
+        <form id="user-form" novalidate>
+            <input type="hidden" id="user-id">
+            <div class="form-group">
+                <label for="f-nom">Nom complet *</label>
+                <input type="text" id="f-nom" required placeholder="Jean Dupont">
+            </div>
+            <div class="form-group">
+                <label for="f-email">Adresse email *</label>
+                <input type="email" id="f-email" required placeholder="jean@wcdo.fr">
+            </div>
+            <div class="form-group">
+                <label for="f-role">Rôle *</label>
+                <select id="f-role" required>
+                    <option value="">— Sélectionner —</option>
+                    <option value="administration">🔴 Administration</option>
+                    <option value="preparation">🟠 Préparation</option>
+                    <option value="accueil">🔵 Accueil</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="f-password">Mot de passe <span id="pwd-required-label">*</span></label>
+                <input type="password" id="f-password" placeholder="••••••••" autocomplete="new-password">
+                <div class="input-hint" id="pwd-hint" style="display:none;">Laisser vide pour conserver le mot de passe actuel.</div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                <button type="submit" class="btn btn-success" id="btn-save">💾 Sauvegarder</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast-container"></div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/utilisateurs.js"></script>
+</body>
+</html>

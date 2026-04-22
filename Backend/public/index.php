@@ -67,6 +67,8 @@ $router->get('/api/admin/commandes',                    [$admin, 'getCommandes']
 // --- Menus (public : borne client) ---
 $router->get('/api/menus',                                      [$admin, 'getMenusPublic']);
 
+
+
 // --- Admin : Menus ---
 $router->get('/api/admin/menus',                                [$admin, 'getMenus']);
 $router->post('/api/admin/menus',                               [$admin, 'createMenu']);

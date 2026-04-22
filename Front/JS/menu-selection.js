@@ -725,46 +725,68 @@ ABANDON + VALIDATION COMMANDE
 ============================================================ */
 
 document.querySelector('.panierEndingAbandon').addEventListener('click', () => {
-  fetch(`${API_BASE}/panier`, { method: 'DELETE', credentials: 'include' })
-    .finally(() => { window.location.href = 'accueil.html'; });
+  // Abandon : on vide le panier local et on retourne à l'accueil.
+  window.apiPanierLignes = [];
+  sessionStorage.removeItem(PANIER_KEY);
+  window.location.href = 'accueil.html';
 });
 
 document.querySelector('.panierEndingPay').addEventListener('click', () => {
   const typeCommande = sessionStorage.getItem('type_commande') || 'sur_place';
 
+  // Sur place : l'utilisateur va saisir son numéro de retrait sur l'écran suivant.
   if (typeCommande === 'sur_place') {
     window.location.href = 'table-number.html';
     return;
   }
 
-  // À emporter : commande directe sans chevalet
-  const modePaiement = sessionStorage.getItem('mode_paiement') || 'carte';
-  const clientId     = sessionStorage.getItem('client_id') ? parseInt(sessionStorage.getItem('client_id')) : null;
-
-  fetch(`${API_BASE}/commande`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type_commande: typeCommande,
-      mode_paiement: modePaiement,
-      client_id:     clientId
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    console.log('Réponse commande :', res);
-    const commande = res.data?.commande;
-    if (commande?.numero_commande) {
-      sessionStorage.setItem('numero_commande', commande.numero_commande);
-      sessionStorage.setItem('numero_chevalet', commande.numero_chevalet);
-      window.location.href = 'remerciement.html';
-    } else {
-      alert(res.message || res.error || 'Erreur lors de la commande');
-    }
-  })
-  .catch(err => alert('Erreur réseau : ' + err));
+  // À emporter : on construit le détail de commande et on l'envoie à une API fictive
+  // (sujet Bloc 1 : pas de paiement, envoi JSON à une API externe).
+  envoyerCommandeFictive({ typeCommande, numeroRetrait: null });
 });
+
+// Envoie le détail complet de la commande à l'API fictive, puis redirige vers
+// l'écran de remerciement. En cas d'échec réseau on redirige quand même pour
+// ne pas bloquer l'utilisateur (la commande est tracée dans sessionStorage).
+function envoyerCommandeFictive({ typeCommande, numeroRetrait }) {
+  const lignes = window.apiPanierLignes || [];
+  const total = lignes.reduce((s, l) => s + (parseFloat(l.sous_total) || 0), 0);
+  const numeroCommande = 'CMD-' + Date.now().toString(36).toUpperCase();
+
+  const detailCommande = {
+    numero_commande: numeroCommande,
+    numero_retrait: numeroRetrait,
+    type_commande: typeCommande,
+    montant_total: parseFloat(total.toFixed(2)),
+    date:     new Date().toISOString(),
+    lignes:   lignes
+  };
+
+  // Persistance locale pour l'écran de remerciement.
+  sessionStorage.setItem('numero_commande', numeroCommande);
+  if (numeroRetrait) sessionStorage.setItem('numero_chevalet', numeroRetrait);
+  sessionStorage.setItem('derniere_commande', JSON.stringify(detailCommande));
+  sessionStorage.removeItem(PANIER_KEY);
+
+  fetch(FAKE_ORDER_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(detailCommande)
+  })
+    .then(r => r.json().catch(() => ({})))
+    .then(res => {
+      console.log('Commande envoyée à l\'API fictive :', res);
+      window.location.href = 'remerciement.html';
+    })
+    .catch(err => {
+      // Même en cas d'erreur réseau, le parcours utilisateur continue.
+      console.warn('Envoi API fictive indisponible, on continue :', err);
+      window.location.href = 'remerciement.html';
+    });
+}
+
+// Exposé pour table-number.js (sur place → numéro de retrait saisi).
+window.envoyerCommandeFictive = envoyerCommandeFictive;
 
 /* ============================================================
 CHANGE CATEGORIES WITH ARROWS

@@ -6,6 +6,7 @@ namespace WCDO\Services;
 
 use InvalidArgumentException;
 use WCDO\Entities\PanierLigne;
+use WCDO\Exceptions\StockInsuffisantException;
 use WCDO\Repositories\PanierRepository;
 use WCDO\Repositories\PanierProduitRepository;
 use WCDO\Repositories\ProduitRepository;
@@ -50,7 +51,7 @@ class PanierService
         array $details = [],
         ?int $clientId = null
     ): PanierLigne {
-        // RG-001 : le produit doit exister et avoir du stock (estDisponible = stock > 0)
+        // RG-001 : le produit doit exister et être disponible (flag admin + stock > 0)
         $produit = $this->produitRepo->findById($produitId);
         if ($produit === null || !$produit->estDisponible()) {
             throw new InvalidArgumentException('Produit indisponible ou introuvable.');
@@ -61,6 +62,26 @@ class PanierService
             if (count($details['sauces']) > 2) {
                 throw new InvalidArgumentException('Maximum 2 sauces autorisées par menu.');
             }
+        }
+
+        // RG-001 (suite) : on ne peut pas mettre plus d'unités que le stock disponible
+        // On additionne ce qui est déjà dans le panier courant pour ce produit.
+        $dejaPanier = 0;
+        $panierExistant = $this->panierRepo->findBySessionId($sessionId);
+        if ($panierExistant !== null) {
+            foreach ($this->panierProduitRepo->findByPanierId($panierExistant->getId()) as $ligne) {
+                if ($ligne->getIdProduit() === $produitId) {
+                    $dejaPanier += $ligne->getQuantite();
+                }
+            }
+        }
+        $totalDemande = $dejaPanier + $quantite;
+        if ($totalDemande > $produit->getStock()) {
+            throw new StockInsuffisantException(
+                produitId:        $produitId,
+                stockDemande:     $totalDemande,
+                stockDisponible:  $produit->getStock()
+            );
         }
 
         // RG-003 : supplement_prix de la taille boisson s'ajoute au prix de base

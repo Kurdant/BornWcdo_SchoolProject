@@ -2,22 +2,99 @@
 MODAL OPEN/CLOSE
 ============================================================ */
 
-const API_BASE = window.location.hostname === 'localhost'
-    ? '/api'
-    : 'https://wakdo-back.acadenice.fr/api';
+// Bloc 1 : catalogue servi depuis des fichiers JSON statiques (Ajax → JSON).
+// Panier géré côté client (sessionStorage) — aucune dépendance backend.
+const JSON_BASE = './BDD_JSON';
+
+// Mapping clés produits.json ⇢ ids de categories.json
+const CATEGORIE_MAP = {
+  menus: 1, boissons: 2, burgers: 3, frites: 4,
+  encas: 5, wraps: 6, salades: 7, desserts: 8, sauces: 9
+};
+
+// URL d'API fictive pour l'envoi final du détail de commande (sujet Bloc 1).
+// Accepte n'importe quel POST JSON et le renvoie — utile pour démontrer l'échange.
+const FAKE_ORDER_API = 'https://httpbin.org/post';
 
 
 
 Promise.all([
-  fetch(`${API_BASE}/categories`, { credentials: 'include' }).then(r => r.json()),
-  fetch(`${API_BASE}/produits`,   { credentials: 'include' }).then(r => r.json())
-]).then(([catRes, prodRes]) => {
-  window.apiCategories = catRes.data;
-  window.apiProduits   = prodRes.data;
+  fetch(`${JSON_BASE}/categories.json`).then(r => r.json()),
+  fetch(`${JSON_BASE}/produits.json`).then(r => r.json())
+]).then(([rawCats, rawProds]) => {
+  // Normalisation catégories : on expose `nom` (majuscule initiale) pour l'UI.
+  window.apiCategories = rawCats.map(c => ({
+    id: c.id,
+    nom: (c.title || '').charAt(0).toUpperCase() + (c.title || '').slice(1),
+    image: c.image
+  }));
+
+  // Aplatissement produits : produits.json est un objet { menus:[...], burgers:[...], ... }
+  // On reconstruit une liste plate avec `id_categorie` dérivé de la clé.
+  const produits = [];
+  Object.entries(rawProds).forEach(([cle, liste]) => {
+    const idCat = CATEGORIE_MAP[cle];
+    if (!idCat || !Array.isArray(liste)) return;
+    liste.forEach(p => produits.push({
+      id:           p.id,
+      nom:          p.nom,
+      prix:         p.prix,
+      image:        p.image,
+      description:  p.description || '',
+      id_categorie: idCat,
+      stock:        99,    // stock générique pour la borne (Bloc 1, pas de gestion stock)
+      disponible:   true
+    }));
+  });
+  window.apiProduits = produits;
+
+  // Hydratation du panier depuis sessionStorage (persistant pendant la session onglet).
+  window.apiPanierLignes = loadPanierLocal();
+
   createCategories();
   createFoodItems();
   if (apiCategories.length > 0) displayFoodByCategory(apiCategories[0].id);
-}).catch(error => console.error('Erreur API :', error));
+}).catch(error => console.error('Erreur chargement JSON :', error));
+
+
+// Les images JSON utilisent des chemins de type "/burgers/xxx.png" → on les préfixe
+// avec le dossier BDD_JSON/ qui contient les assets fournis.
+function imgUrl(path) {
+  if (!path) return 'images/logo.png';
+  return `${JSON_BASE}${path}`;
+}
+
+/* ============================================================
+PANIER LOCAL (sessionStorage)
+============================================================ */
+
+const PANIER_KEY = 'wcdo_panier_lignes';
+
+function loadPanierLocal() {
+  try {
+    return JSON.parse(sessionStorage.getItem(PANIER_KEY) || '[]');
+  } catch (_) {
+    return [];
+  }
+}
+
+function savePanierLocal() {
+  sessionStorage.setItem(PANIER_KEY, JSON.stringify(window.apiPanierLignes || []));
+}
+
+// Quantité déjà présente dans le panier courant pour un produit donné.
+// Utilisé pour empêcher de dépasser le stock disponible (somme panier + demande ≤ stock).
+function getQuantiteProduitPanier(produitId) {
+  const lignes = window.apiPanierLignes || [];
+  return lignes
+    .filter(l => l.id_produit === produitId)
+    .reduce((s, l) => s + (parseInt(l.quantite, 10) || 0), 0);
+}
+
+function getStockProduit(produitId) {
+  const p = (window.apiProduits || []).find(x => x.id === produitId);
+  return p ? parseInt(p.stock, 10) : 0;
+}
 
 
 // Convertit les chemins d'images renvoyés par l'API (/Front/images/...)
@@ -199,8 +276,8 @@ function createFoodItems() {
         return;
       }
 
-      // CAS BOISSON SEULE
-      if (produit.id_categorie === 5) {
+      // CAS BOISSON SEULE (catégorie "boissons" = id 2 dans categories.json)
+      if (produit.id_categorie === 2) {
         openForTailleBoisson();
         openModal();
         document.getElementById('nextStep').style.display = "none";
@@ -325,63 +402,53 @@ function resetCarousel() {
 }
 
 function addBoissonMenu() {
-    fetch(`${API_BASE}/boissons`, { credentials: 'include' })
-        .then(r => r.json())
-        .then(res => {
-            const boissonsFroides = res.data;
-            const container = document.getElementById('boissonsMenu');
+    // Boissons disponibles dans le menu = catégorie id=2 (categories.json)
+    const boissonsFroides = (window.apiProduits || []).filter(p => p.id_categorie === 2);
+    const container = document.getElementById('boissonsMenu');
 
-            container.innerHTML = '';
+    container.innerHTML = '';
 
-            boissonsFroides.forEach(produit => {
-                const div = document.createElement('div');
-                div.classList.add('boissonsFroidMenu', 'modalMenuItem');
-                div.id = `${produit.id}`;
-                div.innerHTML = `
-                    <img src="${imgUrl(produit.image)}" alt="${produit.nom}" />
-                    <h3 class='modalMenuLabel'>${produit.nom}</h3>
-                `;
-                container.appendChild(div);
-                div.addEventListener('click', () => {
-                    const old = container.querySelector('.modalMenuItemSelected');
-                    if (old) old.classList.remove('modalMenuItemSelected');
-                    div.classList.add('modalMenuItemSelected');
-                    idMenu = div.id;
-                    console.log('Boisson sélectionnée id:', idMenu);
-                });
-            });
+    boissonsFroides.forEach(produit => {
+        const div = document.createElement('div');
+        div.classList.add('boissonsFroidMenu', 'modalMenuItem');
+        div.id = `${produit.id}`;
+        div.innerHTML = `
+            <img src="${imgUrl(produit.image)}" alt="${produit.nom}" />
+            <h3 class='modalMenuLabel'>${produit.nom}</h3>
+        `;
+        container.appendChild(div);
+        div.addEventListener('click', () => {
+            const old = container.querySelector('.modalMenuItemSelected');
+            if (old) old.classList.remove('modalMenuItemSelected');
+            div.classList.add('modalMenuItemSelected');
+            idMenu = div.id;
+        });
+    });
 
-            // ✅ RESET APRÈS AJOUT DES ITEMS
-            requestAnimationFrame(() => {
-                boissonsContainer.scrollLeft = 0;
-                scrollIndex = 0;
-                console.log('FORCE RESET scrollLeft=0');
-            });
-        })
-        .catch(error => console.error(error));
+    // Reset du carousel après rendu
+    requestAnimationFrame(() => {
+        boissonsContainer.scrollLeft = 0;
+        scrollIndex = 0;
+    });
 }
 
 function addSaucesMenu() {
   const container = document.getElementById('saucesMenu');
   if (container.children.length > 0) return;
-  fetch(`${API_BASE}/sauces`, { credentials: 'include' })
-    .then(r => r.json())
-    .then(res => {
-      const sauces = res.data || [];
-      container.innerHTML = '';
-      sauces.forEach(sauce => {
-        const div = document.createElement('div');
-        div.classList.add('modalMenuItem');
-        div.dataset.sauceid = sauce.id;
-        div.innerHTML = `<div class="modalMenuLabel">${sauce.nom}</div>`;
-        div.addEventListener('click', () => {
-          container.querySelectorAll('.modalMenuItem').forEach(el => el.classList.remove('modalMenuItemSelected'));
-          div.classList.add('modalMenuItemSelected');
-        });
-        container.appendChild(div);
-      });
-    })
-    .catch(err => console.error('Erreur chargement sauces:', err));
+  // Sauces = catégorie id=9 (categories.json)
+  const sauces = (window.apiProduits || []).filter(p => p.id_categorie === 9);
+  container.innerHTML = '';
+  sauces.forEach(sauce => {
+    const div = document.createElement('div');
+    div.classList.add('modalMenuItem');
+    div.dataset.sauceid = sauce.id;
+    div.innerHTML = `<div class="modalMenuLabel">${sauce.nom}</div>`;
+    div.addEventListener('click', () => {
+      container.querySelectorAll('.modalMenuItem').forEach(el => el.classList.remove('modalMenuItemSelected'));
+      div.classList.add('modalMenuItemSelected');
+    });
+    container.appendChild(div);
+  });
 }
 
 /* ============================================================
@@ -412,8 +479,10 @@ function panierTrash(event) {
   prixFinalCalc();
 
   if (ligneId) {
-    fetch(`${API_BASE}/panier/ligne/${ligneId}`, { method: 'DELETE', credentials: 'include' })
-      .catch(err => console.error('Erreur suppression panier API:', err));
+    // Suppression locale (panier en sessionStorage, plus d'appel backend).
+    window.apiPanierLignes = (window.apiPanierLignes || [])
+      .filter(l => String(l.id) !== String(ligneId));
+    savePanierLocal();
   }
 }
 
@@ -601,35 +670,58 @@ async function createMenus() {
 }
 
 /* ============================================================
-PANIER API - HELPER
+PANIER LOCAL - AJOUT
 ============================================================ */
 
+// Ajoute une ligne au panier local (sessionStorage). Signature inchangée pour
+// ne pas impacter les appelants (AjoutProduitSimple, AjoutAuPanier, etc.).
 function ajouterPanierAPI(produitId, quantite, details, callback) {
-  fetch(`${API_BASE}/panier/ajouter`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id_produit: produitId, quantite, details: details || null })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (!res.success) {
-      alert(res.error || res.message || 'Produit indisponible.');
-      return;
-    }
-    const lignes = res.data?.lignes || [];
-    const matches = lignes.filter(l => l.id_produit === produitId);
-    const ligneId = matches.length > 0 ? matches[matches.length - 1].id : null;
-    if (callback) callback(ligneId);
-  })
-  .catch(err => {
-    console.error('Erreur panier API:', err);
+  // Pré-check stock : on refuse d'ajouter plus que le stock théorique du produit.
+  const stock = getStockProduit(produitId);
+  const dejaPanier = getQuantiteProduitPanier(produitId);
+  if (stock > 0 && dejaPanier + quantite > stock) {
+    const restant = Math.max(0, stock - dejaPanier);
+    alert(
+      restant === 0
+        ? `Stock épuisé : vous avez déjà ${dejaPanier} unité(s) de ce produit dans votre panier.`
+        : `Stock insuffisant : il ne reste que ${restant} unité(s) disponible(s) (vous en avez déjà ${dejaPanier} dans votre panier).`
+    );
     if (callback) callback(null);
-  });
+    return;
+  }
+
+  const produit = (window.apiProduits || []).find(p => p.id === produitId);
+  if (!produit) {
+    alert('Produit introuvable.');
+    if (callback) callback(null);
+    return;
+  }
+
+  // RG-003 : supplément 0,50 € pour la grande taille boisson
+  let prixUnitaire = parseFloat(produit.prix);
+  if (details && details.taille === '50cl') {
+    prixUnitaire += 0.50;
+  }
+
+  const ligne = {
+    id: Date.now() + Math.floor(Math.random() * 1000), // id local unique suffisant pour le panier client
+    id_produit: produitId,
+    nom: produit.nom,
+    quantite: quantite,
+    prix_unitaire: parseFloat(prixUnitaire.toFixed(2)),
+    sous_total: parseFloat((prixUnitaire * quantite).toFixed(2)),
+    details: details || {}
+  };
+
+  window.apiPanierLignes = window.apiPanierLignes || [];
+  window.apiPanierLignes.push(ligne);
+  savePanierLocal();
+
+  if (callback) callback(ligne.id);
 }
 
 /* ============================================================
-ABANDON + PAYER
+ABANDON + VALIDATION COMMANDE
 ============================================================ */
 
 document.querySelector('.panierEndingAbandon').addEventListener('click', () => {
@@ -768,7 +860,22 @@ const chiffre = document.getElementById('IncrémentationNumber');
 let incrementationNombre = 1;
 
 plus.addEventListener('click', () => {
-  incrementationNombre++;                         
+  // On borne l'incrément par le stock restant pour le produit courant (boisson).
+  // Le calcul tient compte des unités déjà présentes dans le panier.
+  if (currentBoisson) {
+    const stock = parseInt(currentBoisson.stock, 10) || 0;
+    const dejaPanier = getQuantiteProduitPanier(currentBoisson.id);
+    if (incrementationNombre + dejaPanier >= stock) {
+      const restant = Math.max(0, stock - dejaPanier);
+      alert(
+        restant === 0
+          ? `Stock épuisé pour "${currentBoisson.nom}".`
+          : `Stock limité : maximum ${restant} unité(s) pour "${currentBoisson.nom}".`
+      );
+      return;
+    }
+  }
+  incrementationNombre++;
   chiffre.textContent = incrementationNombre;
 });
 

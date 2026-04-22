@@ -4,25 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="CSS/table-number.css">
-    <title>Enregistrement Table</title>
+    <title>Numéro de retrait</title>
 </head>
 <body>
     <div class="background-image"></div>
     <div class="table-number-box">
         <div class="table-number-img">
-            <img src="/images/images/illustration-chevalet.png" alt="Numéro de table" />
+            <img src="/images/images/illustration-chevalet.png" alt="Numéro de retrait de commande" />
         </div>
         <div class="table-number-content">
-            <h1>Pour être servis à table,</h1>
+            <h1>Indiquez votre numéro d'identification</h1>
             <p class="table-number-help">
-                Récupérez un chevalet et indiquez ici le numéro inscrit dessus
+                Ce numéro sera affecté à votre commande pour vous permettre de la récupérer au comptoir.
             </p>
             <div class="table-number-inputs">
-                <input type="text" maxlength="1" class="table-digit-input">
-                <input type="text" maxlength="1" class="table-digit-input">
-                <input type="text" maxlength="1" class="table-digit-input">
+                <input type="text" maxlength="1" class="table-digit-input" aria-label="Centaines">
+                <input type="text" maxlength="1" class="table-digit-input" aria-label="Dizaines">
+                <input type="text" maxlength="1" class="table-digit-input" aria-label="Unités">
             </div>
-            <button class="table-number-submit">Enregistrer le numéro</button>
+            <button class="table-number-submit">Valider ma commande</button>
         </div>
     </div>
     <script>
@@ -33,12 +33,12 @@
         document.querySelector('.table-number-submit').addEventListener('click', () => {
             const inputs = document.querySelectorAll('.table-digit-input');
             const numero = Array.from(inputs).map(i => i.value || '0').join('');
-            const chevalet = parseInt(numero, 10);
-            if (!chevalet || chevalet < 1 || chevalet > 999) {
-                alert('Numéro de table invalide (entre 001 et 999)');
+            const numero_retrait = parseInt(numero, 10);
+            if (!numero_retrait || numero_retrait < 1 || numero_retrait > 999) {
+                alert('Numéro invalide (entre 001 et 999)');
                 return;
             }
-            sessionStorage.setItem('numero_chevalet', chevalet);
+            sessionStorage.setItem('numero_chevalet', numero_retrait);
 
             fetch(`${API_BASE}/commande`, {
                 method: 'POST',
@@ -46,7 +46,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     type_commande:   'sur_place',
-                    numero_chevalet: chevalet,
+                    numero_chevalet: numero_retrait,
                     mode_paiement:   'carte',
                     client_id:       sessionStorage.getItem('client_id') ? parseInt(sessionStorage.getItem('client_id')) : null
                 })

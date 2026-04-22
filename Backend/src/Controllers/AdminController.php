@@ -136,6 +136,9 @@ class AdminController
         $stock       = $body['stock'] ?? null;
         $idCategorie = $body['id_categorie'] ?? null;
         $image       = trim($body['image'] ?? '');
+        $disponible  = array_key_exists('disponible', $body)
+            ? (bool) $body['disponible']
+            : true;
 
         if (empty($nom)) {
             Response::error('nom requis', 400);
@@ -156,7 +159,8 @@ class AdminController
             prix:        (float) $prix,
             stock:       (int) $stock,
             categorieId: (int) $idCategorie,
-            image:       $image ?: null
+            image:       $image ?: null,
+            disponible:  $disponible,
         );
 
         Response::success(['produit' => $produit->toArray(), 'message' => 'Produit créé']);
@@ -196,6 +200,9 @@ class AdminController
         $stock       = $body['stock']       ?? $produit->getStock();
         $idCategorie = $body['id_categorie'] ?? $produit->getIdCategorie();
         $image       = trim($body['image']   ?? $produit->getImage() ?? '');
+        $disponible  = array_key_exists('disponible', $body)
+            ? (bool) $body['disponible']
+            : $produit->isDisponible();
 
         if (empty($nom)) {
             Response::error('nom requis', 400);
@@ -217,7 +224,8 @@ class AdminController
             prix:        (float) $prix,
             stock:       (int) $stock,
             categorieId: (int) $idCategorie,
-            image:       $image ?: null
+            image:       $image ?: null,
+            disponible:  $disponible,
         );
 
         $produitMaj = $this->produitRepo->findById($id);
@@ -265,7 +273,7 @@ class AdminController
         $this->verifierRole(Admin::ROLE_ADMINISTRATION);
 
         $commandes = $this->commandeRepo->findAll();
-        Response::success(array_map(fn($c) => $c->toArray(), $commandes));
+        Response::success(array_map(fn($c) => $this->commandeAvecLignes($c), $commandes));
     }
 
     // =========================================================================
@@ -592,7 +600,7 @@ class AdminController
         $this->verifierRole(Admin::ROLE_PREPARATION, Admin::ROLE_ADMINISTRATION);
 
         $commandes = $this->commandeRepo->findForPreparation();
-        Response::success(array_map(fn($c) => $c->toArray(), $commandes));
+        Response::success(array_map(fn($c) => $this->commandeAvecLignes($c), $commandes));
     }
 
     /**
@@ -660,13 +668,16 @@ class AdminController
      * Body JSON :
      * {
      *   "type_commande"  : "sur_place" | "a_emporter",
-     *   "mode_paiement"  : "cb" | "especes" | "ticket_restaurant",
-     *   "numero_chevalet": 42,          (optionnel, défaut : aléatoire RG-004)
-     *   "heure_livraison": "14:30:00",  (optionnel)
+     *   "mode_paiement"  : "carte" | "especes",   (optionnel, défaut "carte")
+     *   "numero_chevalet": 42,                    (optionnel, défaut aléatoire RG-004)
+     *   "heure_livraison": "14:30:00",            (optionnel)
      *   "produits": [
-     *     { "id_produit": 1, "quantite": 2, "prix_unitaire": 5.40 }
+     *     { "id_produit": 1, "quantite": 2 }
      *   ]
      * }
+     *
+     * Le backend récupère le prix_unitaire depuis la BDD (jamais confiance au front)
+     * et calcule lui-même le montant total.
      */
     public function saisirCommande(): never
     {
@@ -679,19 +690,19 @@ class AdminController
         }
 
         $typeCommande   = trim($body['type_commande']  ?? '');
-        $modePaiement   = trim($body['mode_paiement']  ?? '');
+        $modePaiement   = trim($body['mode_paiement']  ?? 'carte');
         $heureLivraison = $body['heure_livraison'] ?? null;
         $numeroChevalet = isset($body['numero_chevalet'])
                           ? (int) $body['numero_chevalet']
                           : random_int(1, 999); // RG-004
         $produits       = $body['produits'] ?? [];
 
-        if (empty($typeCommande) || empty($modePaiement)) {
-            Response::error('type_commande et mode_paiement sont requis', 400);
+        if (empty($typeCommande)) {
+            Response::error('type_commande est requis', 400);
         }
 
-        $typesValides    = ['comptoir', 'telephone', 'salle'];
-        $paiementsValides = ['carte', 'especes', 'cheque'];
+        $typesValides     = ['sur_place', 'a_emporter'];
+        $paiementsValides = ['carte', 'especes'];
         if (!in_array($typeCommande, $typesValides, true)) {
             Response::error('type_commande invalide. Valeurs : ' . implode(', ', $typesValides), 400);
         }
@@ -705,15 +716,38 @@ class AdminController
             Response::error('numero_chevalet doit être entre 1 et 999 (RG-004)', 400);
         }
 
-        // Calculer le montant total à partir des lignes saisies
-        $montantTotal = 0.0;
+        // Récupérer les prix depuis la BDD (ne jamais faire confiance au front)
+        // et calculer le montant total
+        $lignesEnrichies = [];
+        $montantTotal    = 0.0;
         foreach ($produits as $ligne) {
-            $qte  = (int)   ($ligne['quantite']     ?? 0);
-            $prix = (float) ($ligne['prix_unitaire'] ?? 0.0);
-            if ($qte <= 0 || $prix <= 0) {
-                Response::error('Chaque produit doit avoir quantite > 0 et prix_unitaire > 0', 400);
+            $idProduit = (int) ($ligne['id_produit'] ?? 0);
+            $qte       = (int) ($ligne['quantite']   ?? 0);
+
+            if ($idProduit <= 0 || $qte <= 0) {
+                Response::error('Chaque produit doit avoir id_produit > 0 et quantite > 0', 400);
             }
-            $montantTotal += $qte * $prix;
+
+            $produit = $this->produitRepo->findById($idProduit);
+            if ($produit === null) {
+                Response::error("Produit #{$idProduit} introuvable", 400);
+            }
+            if ($produit->getStock() < $qte) {
+                Response::error(
+                    "Stock insuffisant pour « {$produit->getNom()} » (dispo : {$produit->getStock()}, demandé : {$qte})",
+                    409
+                );
+            }
+
+            $prixUnitaire      = $produit->getPrix();
+            $montantTotal     += $prixUnitaire * $qte;
+            $lignesEnrichies[] = [
+                'id_produit'    => $idProduit,
+                'quantite'      => $qte,
+                'prix_unitaire' => $prixUnitaire,
+                'nom_produit'   => $produit->getNom(),
+                'details'       => $ligne['details'] ?? null,
+            ];
         }
 
         // Générer un numéro de commande unique (crypto-safe, pas de collision)
@@ -738,20 +772,19 @@ class AdminController
         try {
             $commandeCreee = $this->commandeRepo->create($commandeObj);
 
-            foreach ($produits as $ligne) {
-                // Réutilisation de PanierLigne comme DTO de ligne (même structure)
+            foreach ($lignesEnrichies as $ligne) {
                 $panierLigne = new PanierLigne(
                     id:           0,
                     idPanier:     0, // ignoré côté CommandeProduitRepo (utilise id_commande)
-                    idProduit:    (int)   $ligne['id_produit'],
-                    quantite:     (int)   $ligne['quantite'],
-                    prixUnitaire: (float) $ligne['prix_unitaire'],
-                    details:      $ligne['details'] ?? null,
+                    idProduit:    $ligne['id_produit'],
+                    quantite:     $ligne['quantite'],
+                    prixUnitaire: $ligne['prix_unitaire'],
+                    details:      $ligne['details'],
                 );
                 $this->commandeProduitRepo->addFromPanierLigne($commandeCreee->getId(), $panierLigne);
 
-                // Décrémenter le stock (comme CommandeService::creer())
-                $this->produitRepo->updateStock((int) $ligne['id_produit'], (int) $ligne['quantite']);
+                // Décrémenter le stock (RG-008)
+                $this->produitRepo->updateStock($ligne['id_produit'], $ligne['quantite']);
             }
 
             $this->pdo->commit();
@@ -761,8 +794,11 @@ class AdminController
         }
 
         Response::success([
-            'commande' => $commandeCreee->toArray(),
-            'message'  => 'Commande saisie',
+            'commande'        => $commandeCreee->toArray(),
+            'numero_commande' => $commandeCreee->getNumeroCommande(),
+            'numero_chevalet' => $commandeCreee->getNumeroChevalet(),
+            'lignes'          => $lignesEnrichies,
+            'message'         => 'Commande saisie',
         ]);
     }
 
@@ -798,5 +834,30 @@ class AdminController
         if (!empty($roles) && !in_array($_SESSION['admin_role'] ?? '', $roles, true)) {
             Response::error('Accès interdit pour ce rôle', 403);
         }
+    }
+
+    /**
+     * Sérialise une commande en incluant ses lignes détaillées (nom produit,
+     * quantité, prix). Utilisé par les endpoints d'accueil/préparation
+     * pour un format homogène côté back-office.
+     */
+    private function commandeAvecLignes(Commande $commande): array
+    {
+        $base   = $commande->toArray();
+        $lignes = $this->commandeProduitRepo->findByCommandeId($commande->getId());
+
+        $base['lignes'] = array_map(function ($ligne) {
+            $produit = $this->produitRepo->findById($ligne->getIdProduit());
+            return [
+                'id_produit'    => $ligne->getIdProduit(),
+                'nom_produit'   => $produit ? $produit->getNom() : 'Produit supprimé',
+                'quantite'      => $ligne->getQuantite(),
+                'prix_unitaire' => $ligne->getPrixUnitaire(),
+                'sous_total'    => round($ligne->getPrixUnitaire() * $ligne->getQuantite(), 2),
+                'details'       => $ligne->getDetails(),
+            ];
+        }, $lignes);
+
+        return $base;
     }
 }

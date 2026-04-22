@@ -112,7 +112,7 @@ function openModal(mode, id = null) {
         document.getElementById('f-stock').value            = p.stock ?? '';
         document.getElementById('f-categorie').value        = p.id_categorie || '';
         document.getElementById('f-image').value            = p.image || '';
-        document.getElementById('f-disponible').checked     = !!p.disponible;
+        document.getElementById('f-disponible').checked     = p.actif !== undefined ? !!p.actif : !!p.disponible;
     } else {
         document.getElementById('modal-title').textContent  = '➕ Ajouter un produit';
         document.getElementById('f-disponible').checked     = true;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WCDO\Controllers;
 
 use InvalidArgumentException;
+use WCDO\Exceptions\StockInsuffisantException;
 use WCDO\Http\Response;
 use WCDO\Services\PanierService;
 
@@ -139,6 +140,9 @@ class PanierController
                 'total' => $panierData['total'],
             ]);
 
+        } catch (StockInsuffisantException $e) {
+            // RG-001 : stock insuffisant (déjà au panier + quantité demandée > stock)
+            Response::error($e->getMessage(), 409);
         } catch (InvalidArgumentException $e) {
             // RG-001 (produit indisponible) ou RG-002 (max 2 sauces)
             Response::error($e->getMessage(), 400);

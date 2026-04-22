@@ -14,7 +14,7 @@ class ProduitRepository extends BaseRepository
     public function findAll(): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, nom, description, prix, stock, id_categorie, image, date_creation 
+            'SELECT id, nom, description, prix, stock, id_categorie, image, disponible, date_creation 
              FROM PRODUIT 
              ORDER BY nom ASC'
         );
@@ -31,7 +31,7 @@ class ProduitRepository extends BaseRepository
     public function findById(int $id): ?Produit
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, nom, description, prix, stock, id_categorie, image, date_creation 
+            'SELECT id, nom, description, prix, stock, id_categorie, image, disponible, date_creation 
              FROM PRODUIT 
              WHERE id = :id'
         );
@@ -49,7 +49,7 @@ class ProduitRepository extends BaseRepository
     public function findByCategorie(int $categorieId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, nom, description, prix, stock, id_categorie, image, date_creation 
+            'SELECT id, nom, description, prix, stock, id_categorie, image, disponible, date_creation 
              FROM PRODUIT 
              WHERE id_categorie = :categorie_id 
              ORDER BY nom ASC'
@@ -70,11 +70,12 @@ class ProduitRepository extends BaseRepository
         float $prix,
         int $stock,
         int $categorieId,
-        ?string $image = null
+        ?string $image = null,
+        bool $disponible = true
     ): Produit {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO PRODUIT (nom, description, prix, stock, id_categorie, image, date_creation) 
-             VALUES (:nom, :description, :prix, :stock, :categorie_id, :image, NOW())'
+            'INSERT INTO PRODUIT (nom, description, prix, stock, id_categorie, image, disponible, date_creation) 
+             VALUES (:nom, :description, :prix, :stock, :categorie_id, :image, :disponible, NOW())'
         );
         $stmt->execute([
             'nom' => $nom,
@@ -82,7 +83,8 @@ class ProduitRepository extends BaseRepository
             'prix' => $prix,
             'stock' => $stock,
             'categorie_id' => $categorieId,
-            'image' => $image
+            'image' => $image,
+            'disponible' => $disponible ? 1 : 0,
         ]);
         
         return new Produit(
@@ -93,7 +95,8 @@ class ProduitRepository extends BaseRepository
             stock: $stock,
             idCategorie: $categorieId,
             image: $image,
-            dateCreation: date('Y-m-d H:i:s')
+            dateCreation: date('Y-m-d H:i:s'),
+            disponible: $disponible,
         );
     }
 
@@ -121,23 +124,26 @@ class ProduitRepository extends BaseRepository
         float $prix,
         int $stock,
         int $categorieId,
-        ?string $image
+        ?string $image,
+        bool $disponible = true
     ): bool {
         $stmt = $this->pdo->prepare(
             'UPDATE PRODUIT
              SET nom = :nom, description = :description, prix = :prix,
-                 stock = :stock, id_categorie = :categorie_id, image = :image
+                 stock = :stock, id_categorie = :categorie_id, image = :image,
+                 disponible = :disponible
              WHERE id = :id'
         );
 
         return $stmt->execute([
-            'nom'         => $nom,
-            'description' => $description,
-            'prix'        => $prix,
-            'stock'       => $stock,
+            'nom'          => $nom,
+            'description'  => $description,
+            'prix'         => $prix,
+            'stock'        => $stock,
             'categorie_id' => $categorieId,
-            'image'       => $image,
-            'id'          => $id,
+            'image'        => $image,
+            'disponible'   => $disponible ? 1 : 0,
+            'id'           => $id,
         ]);
     }
 
@@ -163,7 +169,8 @@ class ProduitRepository extends BaseRepository
             stock: (int)$row['stock'],
             idCategorie: (int)$row['id_categorie'],
             image: $row['image'],
-            dateCreation: $row['date_creation']
+            dateCreation: $row['date_creation'],
+            disponible: isset($row['disponible']) ? (bool)(int)$row['disponible'] : true,
         );
     }
 }

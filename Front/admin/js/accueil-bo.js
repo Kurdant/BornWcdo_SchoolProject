@@ -171,7 +171,7 @@ async function validerCommande() {
         type_commande:   type,
         mode_paiement:   paiement,
         heure_livraison: heure,
-        lignes: lignesPanier.map(l => ({ id_produit: l.id_produit, quantite: l.quantite }))
+        produits: lignesPanier.map(l => ({ id_produit: l.id_produit, quantite: l.quantite }))
     };
 
     const btn = document.getElementById('btn-valider');

@@ -15,6 +15,7 @@ class Produit
         private readonly int     $idCategorie,
         private readonly ?string $image,
         private readonly string  $dateCreation,
+        private readonly bool    $disponible = true,
     ) {
         // RG : prix strictement positif
         if ($this->prix <= 0) {
@@ -34,11 +35,12 @@ class Produit
     public function getIdCategorie(): int     { return $this->idCategorie; }
     public function getImage(): ?string       { return $this->image; }
     public function getDateCreation(): string { return $this->dateCreation; }
+    public function isDisponible(): bool      { return $this->disponible; }
 
-    // RG-001 : stock = 0 → produit indisponible
+    // RG-001 : produit indisponible si désactivé admin OU stock = 0
     public function estDisponible(): bool
     {
-        return $this->stock > 0;
+        return $this->disponible && $this->stock > 0;
     }
 
     public function toArray(): array
@@ -52,6 +54,7 @@ class Produit
             'id_categorie'  => $this->idCategorie,
             'image'         => $this->image,
             'disponible'    => $this->estDisponible(),
+            'actif'         => $this->disponible,
             'date_creation' => $this->dateCreation,
         ];
     }
